@@ -6,8 +6,6 @@ extern crate image;
 use clap::{App, Arg};
 use qrcode::{QrCode, EcLevel};
 use termion::color;
-use termion::style;
-use image::GrayImage;
 
 /*TODO: add arguments for:
 - safe zone rendering
@@ -35,9 +33,6 @@ fn main() {
     let input = matches.value_of("INPUT").unwrap();
 
     let code = QrCode::with_error_correction_level(input, EcLevel::H).unwrap();
-
-    let image: GrayImage = code.render().to_image();
-    image.save("/tmp/qrcode.png").unwrap();
 
     let bit_array = code.to_vec();
 
