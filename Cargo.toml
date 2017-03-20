@@ -10,3 +10,8 @@ termion = "*"
 clap = "2"
 image = "*"
 #regex = "0.2.*"
+
+[[bin]]
+bench = false
+path = "src/main.rs"
+name = "qr"
