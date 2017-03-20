@@ -7,4 +7,5 @@ authors = ["Lukas Reuter <lukas@bootsmann-games.de>"]
 qrcode = "*"
 rustty = "*"
 termion = "*"
-clap = "2.21.*"
+clap = "2"
+#regex = "0.2.*"
