@@ -1,0 +1,10 @@
+[package]
+name = "qrterm"
+version = "0.1.0"
+authors = ["Lukas Reuter <lukas@bootsmann-games.de>"]
+
+[dependencies]
+qrcode = "*"
+rustty = "*"
+termion = "*"
+clap = "2.21.*"
