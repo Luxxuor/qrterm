@@ -1,8 +1,10 @@
 extern crate clap;
 extern crate qrcode;
+extern crate termion;
 
 use clap::{App, Arg, SubCommand};
 use qrcode::QrCode;
+use termion::color;
 
 fn main() {
     let matches = App::new("qrterm")
@@ -36,13 +38,13 @@ fn main() {
         let item = bit_array[i];
 
         if item {
-            print!("X");
+            print!("{}{}██", color::Fg(color::Black), color::Bg(color::Black)); //▜
         } else {
-            print!("O");
+            print!("{}{}██", color::Fg(color::White), color::Bg(color::White));
         }
 
         if (i + 1) % w == 0 {
-            println!("");
+            println!("{}{}", color::Fg(color::Reset), color::Bg(color::Reset));
         }
     }
     //println!("");
