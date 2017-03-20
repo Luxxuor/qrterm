@@ -1,10 +1,12 @@
 extern crate clap;
 extern crate qrcode;
 extern crate termion;
+extern crate image;
 
 use clap::{App, Arg, SubCommand};
 use qrcode::QrCode;
 use termion::color;
+use image::GrayImage;
 
 fn main() {
     let matches = App::new("qrterm")
@@ -29,6 +31,9 @@ fn main() {
 
     let code = QrCode::new(input).unwrap();
 
+    //let image: GrayImage = code.render().to_image();
+    //image.save("/tmp/qrcode.png").unwrap();
+
     let bit_array = code.to_vec();
 
     let size = bit_array.len();
@@ -40,7 +45,7 @@ fn main() {
         if item {
             print!("{}{}██", color::Fg(color::Black), color::Bg(color::Black)); //▜
         } else {
-            print!("{}{}██", color::Fg(color::White), color::Bg(color::White));
+            print!("{}{}██", color::Fg(color::LightWhite), color::Bg(color::LightWhite));
         }
 
         if (i + 1) % w == 0 {

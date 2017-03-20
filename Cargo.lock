@@ -3,6 +3,7 @@ name = "qrterm"
 version = "0.1.0"
 dependencies = [
  "clap 2.21.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "image 0.12.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "qrcode 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustty 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "termion 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
