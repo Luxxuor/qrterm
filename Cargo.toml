@@ -14,7 +14,7 @@ rustty = "*"
 termion = "*"
 clap = "2"
 image = "*"
-#regex = "0.2.*"
+regex = "0.2.*"
 
 [[bin]]
 bench = false
