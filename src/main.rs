@@ -24,7 +24,7 @@ fn main() {
         .version("0.1")
         .author("Lukas R. <lukas@bootsmann-games.de>")
         .about("Generates and displays terminal friendly QR-Codes from input strings")
-        .arg(Arg::with_name("safe_zone")
+        .arg(Arg::with_name("safe_zone") //TODO: change this into an off switch
             .global(true)
             .short("s")
             .long("safe-zone")
@@ -33,43 +33,44 @@ fn main() {
             .takes_value(true)
             .default_value("true")
             .possible_values(&["true", "false"])
-            .value_names(&["true", "false"])
-        )
-
+            .value_names(&["true", "false"]))
         .subcommand(SubCommand::with_name("wifi")
-                                      .about("formats to a wifi access string")
-                                      .arg(Arg::with_name("ssid").required(true))
-                                      .arg(Arg::with_name("pwd").required(true))
-                                      .arg(Arg::with_name("mode").required(true))
-        )
-        //.arg(Arg::with_name("type")
-        //    .short("t")
-        //    .long("type")
-        //    .value_name("TYPE")
-        //    .help("Sets if a special qr type should be used")
-        //    .takes_value(true))
+            .about("formats to a wifi access string")
+            .arg(Arg::with_name("ssid").required(true))
+            .arg(Arg::with_name("pwd").required(true))
+            .arg(Arg::with_name("mode")
+                .required(true)
+                .possible_values(&["WEP", "WPA", "nopass"])
+                .value_name("MODE"))
+            .arg(Arg::with_name("hidden")
+                .required(false)
+                .default_value("false")
+                .possible_values(&["true", "false"])
+                .value_name("HIDDEN")))
         .arg(Arg::with_name("INPUT")
             .help("The input string to use")
-            .required(true)
-        );
+            .required(true));
 
     let matches = app.get_matches();
-    //let subcommands = matches.subcommand_matches();
 
-    let mut payload = String::new();
+    let payload: String;
     if let Some(sub) = matches.subcommand_matches("wifi") {
-        //TODO:prelimenary
+        let auth = match sub.value_of("mode") {
+            Some("WEP") => payloads::Authentication::WEP,
+            Some("WPA") => payloads::Authentication::WPA,
+            _ => payloads::Authentication::nopass,
+        };
         payload = payloads::wifi_string(sub.value_of("ssid").unwrap(),
-                              &"".to_string(),
-                              &payloads::Authentication::nopass,
-                              false);
+                                        sub.value_of("pwd").unwrap(),
+                                        &auth,
+                                        sub.value_of("hidden").unwrap() == "true");
+    } else {
+        payload = String::from(matches.value_of("INPUT").unwrap());
     }
-
-    let input = matches.value_of("INPUT").unwrap();
 
     let safe: bool = matches.value_of("safe_zone").unwrap() == "true";
 
-    let code = QrCode::with_error_correction_level(input, EcLevel::H).unwrap();
+    let code = QrCode::with_error_correction_level(payload, EcLevel::H).unwrap();
 
     let bit_array = code.to_vec();
 
@@ -93,7 +94,7 @@ fn main() {
         }
 
         if *item {
-            print!("{}  ", color::Bg(color::Black)); //█ ▜
+            print!("{}  ", color::Bg(color::Black));
         } else {
             print!("{}  ", color::Bg(color::LightWhite));
         }
