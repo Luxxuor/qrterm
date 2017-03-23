@@ -26,14 +26,17 @@ fn main() {
         .about("Generates and displays terminal friendly QR-Codes from input strings")
         .arg(Arg::with_name("safe_zone") //TODO: change this into an off switch
             .global(true)
+            .required(false)
             .short("s")
             .long("safe-zone")
-            .value_name("BOOL")
+            //.value_name("BOOL")
             .help("Sets wether the safe zone around the code should be drawn or not.")
-            .takes_value(true)
-            .default_value("true")
-            .possible_values(&["true", "false"])
-            .value_names(&["true", "false"]))
+            .takes_value(false)
+            //.default_value("true")
+            //.possible_values(&["true", "false"])
+            //.value_names(&["true", "false"])
+            )
+            //TODO: subcmds are not working like expected, if you have one the system assumes you have many
         .subcommand(SubCommand::with_name("wifi")
             .about("formats to a wifi access string")
             .arg(Arg::with_name("ssid").required(true))
@@ -49,7 +52,7 @@ fn main() {
                 .value_name("HIDDEN")))
         .arg(Arg::with_name("INPUT")
             .help("The input string to use")
-            .required(true));
+            .required_unless_one(&["wifi"]));
 
     let matches = app.get_matches();
 
@@ -68,7 +71,10 @@ fn main() {
         payload = String::from(matches.value_of("INPUT").unwrap());
     }
 
-    let safe: bool = matches.value_of("safe_zone").unwrap() == "true";
+    let safe: bool = match matches.occurrences_of("safe_zone") {
+        0 => true,
+        _ => false,
+    };
 
     let code = QrCode::with_error_correction_level(payload, EcLevel::H).unwrap();
 
