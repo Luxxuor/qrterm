@@ -47,6 +47,7 @@ fn escape_input(inp: &str, simple: bool) -> String {
     n
 }
 
+#[allow(unknown_lints)]
 #[allow(zero_ptr)]
 fn is_hexstyle(arg: &str) -> bool {
     lazy_static! {
