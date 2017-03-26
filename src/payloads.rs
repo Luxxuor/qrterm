@@ -1,7 +1,6 @@
 use regex::Regex;
 
 #[derive(Debug)]
-#[allow(dead_code)]
 #[allow(non_camel_case_types)]
 pub enum Authentication {
     WEP,
@@ -27,6 +26,51 @@ pub fn wifi_string(ssid: &str, password: &str, mode: &Authentication, is_hidden:
                    ssid_n,
                    password_n,
                    hidden);
+}
+
+#[derive(Debug)]
+#[allow(non_camel_case_types)]
+pub enum MailEncoding {
+    MAILTO,
+    MATMSG,
+    SMTP,
+}
+
+pub fn mail_string(receiver: &str,
+                   subject: &str,
+                   message: &str,
+                   encoding: &MailEncoding)
+                   -> String {
+    match encoding {
+        &MailEncoding::MAILTO => {
+            String::from(format!("mailto:{}?subject={}&body={}", receiver, subject, message))
+        }
+        &MailEncoding::MATMSG => {
+            String::from(format!("MATMSG:TO:{};SUB:{};BODY:{};;",
+                                 receiver,
+                                 escape_input(subject, false),
+                                 escape_input(message, false)))
+        }
+        &MailEncoding::SMTP => {
+            String::from(format!("SMTP:{}:{}:{}",
+                                 receiver,
+                                 escape_input(subject, true),
+                                 escape_input(message, true)))
+        }
+        _ => String::from(receiver),
+    }
+}
+
+pub fn phone_string(number: &str) -> String {
+    String::from(format!("tel:{}", number))
+}
+
+pub fn url_string(url: &str) -> String {
+    if !url.starts_with("http") {
+        "http://".to_string() + &url
+    } else {
+        String::from(url)
+    }
 }
 
 fn escape_input(inp: &str, simple: bool) -> String {
