@@ -12,9 +12,9 @@ license = "mit"
 qrcode = "*"
 rustty = "*"
 termion = "*"
-clap = "2"
+clap = "*"
 image = "*"
-regex = "0.2.*"
+regex = "*"
 lazy_static = "*"
 
 [[bin]]
