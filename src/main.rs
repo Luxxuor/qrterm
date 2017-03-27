@@ -72,9 +72,14 @@ fn main() {
             .arg(Arg::with_name("url")
                 .required(true)
                 .value_name("URL")))
+        .subcommand(SubCommand::with_name(PHONE_COMMAND)
+            .about("formats to a phone number")
+            .arg(Arg::with_name("number")
+                .required(true)
+                .value_name("NUMBER")))
         .arg(Arg::with_name("INPUT")
             .help("The input string to use")
-            .required_unless_one(&[WIFI_COMMAND, MAIL_COMMAND]));
+            .required_unless_one(&[WIFI_COMMAND, MAIL_COMMAND, URL_COMMAND, PHONE_COMMAND]));
 
     let matches = app.get_matches();
 
@@ -100,6 +105,10 @@ fn main() {
                                         sub.value_of("subject").unwrap(),
                                         sub.value_of("message").unwrap(),
                                         &encoding);
+    } else if let Some(sub) = matches.subcommand_matches(URL_COMMAND) {
+        payload = payloads::url_string(sub.value_of("url").unwrap());
+    } else if let Some(sub) = matches.subcommand_matches(PHONE_COMMAND) {
+        payload = payloads::phone_string(sub.value_of("phone").unwrap());
     } else {
         payload = String::from(matches.value_of("INPUT").unwrap());
     }
