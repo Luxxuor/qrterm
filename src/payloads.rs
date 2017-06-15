@@ -57,7 +57,6 @@ pub fn mail_string(receiver: &str,
                                  escape_input(subject, true),
                                  escape_input(message, true)))
         }
-        _ => String::from(receiver),
     }
 }
 
