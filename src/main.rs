@@ -120,7 +120,7 @@ fn main() {
 
     let code = QrCode::with_error_correction_level(payload, EcLevel::H).unwrap();
 
-    let bit_array = code.to_vec();
+    let bit_array = code.to_colors();
 
     let w = code.width();
     let wide = w + 6;
@@ -141,7 +141,7 @@ fn main() {
             print!("{}      ", color::Bg(color::LightWhite));
         }
 
-        if *item {
+        if *item == qrcode::types::Color::Dark {
             print!("{}  ", color::Bg(color::Black));
         } else {
             print!("{}  ", color::Bg(color::LightWhite));
