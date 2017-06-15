@@ -15,16 +15,16 @@ mod payloads;
 
 const WIFI_COMMAND: &'static str = "wifi";
 const MAIL_COMMAND: &'static str = "mail";
-const SMS_COMMAND: &'static str = "sms";
-const MMS_COMMAND: &'static str = "mms";
-const GEO_COMMAND: &'static str = "geo";
+// const SMS_COMMAND: &'static str = "sms";
+// const MMS_COMMAND: &'static str = "mms";
+// const GEO_COMMAND: &'static str = "geo";
 const PHONE_COMMAND: &'static str = "phone";
-const SKYPE_COMMAND: &'static str = "skype";
+// const SKYPE_COMMAND: &'static str = "skype";
 const URL_COMMAND: &'static str = "url";
-const BOOKMARK_COMMAND: &'static str = "bookmark";
-const BITCOIN_COMMAND: &'static str = "bitcoin";
-const GIRO_COMMAND: &'static str = "giro";
-const CALENDAR_COMMAND: &'static str = "calendar";
+// const BOOKMARK_COMMAND: &'static str = "bookmark";
+// const BITCOIN_COMMAND: &'static str = "bitcoin";
+// const GIRO_COMMAND: &'static str = "giro";
+// const CALENDAR_COMMAND: &'static str = "calendar";
 
 /*TODO: add arguments for:
 - ec Level
