@@ -11,6 +11,7 @@ extern crate regex;
 use clap::{App, Arg, SubCommand, AppSettings};
 use qrcode::{QrCode, EcLevel};
 use termion::color;
+use image::GrayImage;
 
 mod payloads;
 
@@ -47,6 +48,13 @@ fn main() {
             .takes_value(false)
             )
             //TODO: subcmds are not working like expected, if you have one the system assumes you have many
+        .arg(Arg::with_name("output")
+            .global(true)
+            .short("o").long("output")
+            .help("Prints the QR-Code to a file. The image format is derived from the file extension. Currently only jpeg and png files are supported.")
+            .takes_value(true)
+            .value_name("FILE")
+            .multiple(false))
         .arg(Arg::with_name("error")
             .global(true)
             .short("e").long("error")
@@ -104,6 +112,14 @@ fn main() {
         &_ => EcLevel::H,
     };
     let code = QrCode::with_error_correction_level(payload, error).unwrap();
+
+    // are we drawing to the terminal or to a file?
+    match matches.occurrences_of("output") {
+        1 => save(&code, safe, matches.value_of("output").unwrap()),
+        _ => draw(&code, safe),
+    }
+}
+
 // deduces wich kind of string we are going to encode
 fn get_payload(matches: &clap::ArgMatches) -> String {
     if let Some(sub) = matches.subcommand_matches(WIFI_COMMAND) {
@@ -139,9 +155,23 @@ fn get_payload(matches: &clap::ArgMatches) -> String {
         0 => true,
         _ => false,
     };
+// save to a file at the path
+fn save(code: &QrCode, safe: bool, path: &str) {
+    // render to a image struct
+    let image: GrayImage = code.render().quiet_zone(safe).to_image();
 
+    // save the image
+    match image.save(path) {
+        Ok(..) => println!("Image successfully saved to: {:?}", path),
+        Err(e) => println!("Tried to create file but there was a problem: {:?}", 
+            if let Some(inner_err) = e.get_ref() { inner_err.to_string() } else { e.to_string() }),
+    };
+}
 
-    let bit_array = code.to_colors();
+// draw to the terminal
+fn draw(code: &QrCode, safe: bool) {
+    // get "bit" array
+    let bit_array = code.to_vec();
 
     let w = code.width();
     let wide = w + 6;
