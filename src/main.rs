@@ -8,10 +8,12 @@ extern crate termion;
 extern crate image;
 extern crate regex;
 
-use clap::{App, Arg, SubCommand, AppSettings};
+use clap::{App, AppSettings, Arg, Shell, SubCommand};
 use qrcode::{QrCode, EcLevel};
 use termion::color;
 use image::GrayImage;
+use std::process::exit;
+use std::fs;
 
 mod payloads;
 
@@ -31,12 +33,11 @@ const URL_COMMAND: &'static str = "url";
 /*TODO: add arguments for:
 - Add help texts for the subcommands
 - Add error texts for some exit branches (mostly file output and qrcode gen)
-- shell completions (see build.rasst file)
 - implement different types of qr payloads
 */
 fn main() {
     // create the cli interface with all subcommands, flags and args
-    let app = App::new(crate_name!())
+    let mut app = App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!("\n"))
         .about(crate_description!())
@@ -45,47 +46,55 @@ fn main() {
             .global(true)
             .short("s").long("safe-zone")
             .help("Sets wether the safe zone around the code should be drawn or not.")
-            .takes_value(false)
-            .multiple(false))
+            .takes_value(false))
         .arg(Arg::with_name("output")
             .global(true)
             .short("o").long("output")
             .help("Prints the QR-Code to a file. The image format is derived from the file extension. Currently only jpeg and png files are supported.")
-            .takes_value(true)
-            .value_name("FILE")
-            .multiple(false))
+            .value_name("FILE"))
         .arg(Arg::with_name("error")
             .global(true)
             .short("e").long("error")
-            .help("Set the desired error correction level")
-            .takes_value(true)
+            .help("Set the desired error correction level.")
             .value_name("LEVEL")
             .possible_values(&["L", "M", "Q", "H"])
             .default_value("H"))
         .arg(Arg::with_name("INPUT")
             .help("The input string to use")
             .required(true))
+        .subcommand(SubCommand::with_name("completions")
+            .about("Outputs completion files for various shells.")
+            .arg(Arg::with_name("comp_dir")
+                .required(true)
+                .help("The directory to write the completion file to.")
+                .value_name("DIR"))
+            .arg(Arg::with_name("shell")
+                .long("shell")
+                .help("For which shell the completions should be generated for.")
+                .value_name("SHELL")
+                .possible_values(&["bash", "zsh", "fish", "ps"])
+                .default_value("bash")))
         .subcommand(SubCommand::with_name(WIFI_COMMAND)
             .about("formats to a wifi access string QR-Code")
             .arg(Arg::with_name("ssid").required(true))
             .arg(Arg::with_name("pwd").required(true))
             .arg(Arg::with_name("mode")
+                .value_name("MODE")
                 .possible_values(&["WEP", "WPA", "nopass"])
-                .default_value("WPA")
-                .value_name("MODE"))
+                .default_value("WPA"))
             .arg(Arg::with_name("hidden")
+                .value_name("HIDDEN")
                 .possible_values(&["true", "false"])
-                .default_value("false")
-                .value_name("HIDDEN")))
+                .default_value("false")))
         .subcommand(SubCommand::with_name(MAIL_COMMAND)
             .about("formats to a mail adress string QR-Code")
             .arg(Arg::with_name("receiver").required(true))
             .arg(Arg::with_name("subject"))
             .arg(Arg::with_name("message"))
             .arg(Arg::with_name("encoding")
+                .value_name("ENCODING")
                 .possible_values(&["MAILTO", "MATMSG", "SMTP"])
-                .default_value("MAILTO")
-                .value_name("ENCODING")))
+                .default_value("MAILTO")))
         .subcommand(SubCommand::with_name(URL_COMMAND)
             .about("formats to an URL QR-Code")
             .arg(Arg::with_name("url")
@@ -95,10 +104,33 @@ fn main() {
             .about("formats to a phone number QR-Code")
             .arg(Arg::with_name("number")
                 .required(true)
-                .value_name("NUMBER"))
-        );
+                .value_name("NUMBER")))
+        ; // let app = ...
 
-    let matches = app.get_matches();
+    let matches = app.clone().get_matches();
+
+    // write the completions first if they were requested, then exit
+    if let Some(comp) = matches.subcommand_matches("completions") {
+        let dir = comp.value_of("comp_dir").unwrap();
+
+        let shell = match comp.value_of("shell") {
+            Some("ps") => Shell::PowerShell,
+            Some("zsh") => Shell::Zsh,
+            Some("fish") => Shell::Fish,
+            _ => Shell::Bash,
+        };
+
+        // create directory if necessary
+        fs::create_dir_all(&dir).unwrap();
+
+        // let mut app = app::app_short();
+        app.gen_completions("qr", shell, dir);
+
+        println!("Completion file for the {:?} shell was writen to: {:?}", shell, dir);
+
+        // exit and dont generate a qr-code
+        exit(0);
+    }
 
     // deduce the string payload 
     let payload = get_payload(&matches);
