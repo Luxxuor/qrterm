@@ -76,7 +76,6 @@ fn main() {
                 .default_value("WPA")
                 .value_name("MODE"))
             .arg(Arg::with_name("hidden")
-                .required(false)
                 .possible_values(&["true", "false"])
                 .default_value("false")
                 .value_name("HIDDEN")))
