@@ -1,7 +1,8 @@
 #[macro_use]
 extern crate lazy_static;
-
+#[macro_use]
 extern crate clap;
+
 extern crate qrcode;
 extern crate termion;
 extern crate image;
@@ -32,11 +33,11 @@ const URL_COMMAND: &'static str = "url";
 - implement different types of qr payloads
 */
 fn main() {
-    let app = App::new("qrterm")
-        .version("0.1")
-        .author("Lukas R. <lukas@bootsmann-games.de>")
-        .about("Generates and displays terminal friendly QR-Codes from input strings")
         .arg(Arg::with_name("safe_zone") //TODO: change this into an off switch
+    let app = App::new(crate_name!())
+        .version(crate_version!())
+        .author(crate_authors!("\n"))
+        .about(crate_description!())
             .global(true)
             .required(false)
             .short("s")
