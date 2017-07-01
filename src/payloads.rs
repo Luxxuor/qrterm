@@ -43,6 +43,7 @@ pub fn mail_string(receiver: &str,
                    -> String {
     match *encoding {
         MailEncoding::MAILTO => {
+            //TODO: we should uri.dataescape the subject and the message
             String::from(format!("mailto:{}?subject={}&body={}", receiver, subject, message))
         }
         MailEncoding::MATMSG => {

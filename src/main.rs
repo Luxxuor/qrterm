@@ -29,25 +29,26 @@ const URL_COMMAND: &'static str = "url";
 // const CALENDAR_COMMAND: &'static str = "calendar";
 
 /*TODO: add arguments for:
-- ec Level
-- size of qr code
+- Add help texts for the subcommands
+- Add error texts for some exit branches (mostly file output and qrcode gen)
+- shell completions (see build.rasst file)
 - implement different types of qr payloads
 */
 fn main() {
-        .arg(Arg::with_name("safe_zone") //TODO: change this into an off switch
+    // create the cli interface with all subcommands, flags and args
     let app = App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!("\n"))
         .about(crate_description!())
         .global_setting(AppSettings::SubcommandsNegateReqs)
+        .arg(Arg::with_name("safe_zone")
             .global(true)
             .required(false)
             .short("s")
             .long("safe-zone")
             .help("Sets wether the safe zone around the code should be drawn or not.")
             .takes_value(false)
-            )
-            //TODO: subcmds are not working like expected, if you have one the system assumes you have many
+            .multiple(false))
         .arg(Arg::with_name("output")
             .global(true)
             .short("o").long("output")
@@ -111,6 +112,8 @@ fn main() {
         "Q" => EcLevel::Q,
         &_ => EcLevel::H,
     };
+
+    //TODO: catch the possible errors
     let code = QrCode::with_error_correction_level(payload, error).unwrap();
 
     // are we drawing to the terminal or to a file?
@@ -173,10 +176,11 @@ fn draw(code: &QrCode, safe: bool) {
     // get "bit" array
     let bit_array = code.to_vec();
 
+    // get the code width and add extra space for the safe zone
     let w = code.width();
     let wide = w + 6;
 
-    //Draw the first white safe zone
+    // draw the first white safe zone
     if safe {
         for a in 1..(wide * 3) + 1 {
             print!("{}  ", color::Bg(color::LightWhite));
@@ -186,8 +190,9 @@ fn draw(code: &QrCode, safe: bool) {
         }
     }
 
+    // main drawing loop
     for (i, item) in bit_array.iter().enumerate() {
-        //left safe zone
+        // left safe zone
         if safe && i % w == 0 {
             print!("{}      ", color::Bg(color::LightWhite));
         }
