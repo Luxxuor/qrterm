@@ -47,6 +47,14 @@ fn main() {
             .takes_value(false)
             )
             //TODO: subcmds are not working like expected, if you have one the system assumes you have many
+        .arg(Arg::with_name("error")
+            .global(true)
+            .short("e").long("error")
+            .help("Set the desired error correction level")
+            .takes_value(true)
+            .value_name("LEVEL")
+            .possible_values(&["L", "M", "Q", "H"])
+            .default_value("H"))
         .arg(Arg::with_name("INPUT")
             .help("The input string to use")
             .required(true))
@@ -87,6 +95,14 @@ fn main() {
     let matches = app.get_matches();
 
     let payload: String;
+    // what error level can we expect? always defaults to "H"
+    let error: EcLevel = match matches.value_of("error").unwrap() {
+        "L" => EcLevel::L,
+        "M" => EcLevel::M,
+        "Q" => EcLevel::Q,
+        &_ => EcLevel::H,
+    };
+    let code = QrCode::with_error_correction_level(payload, error).unwrap();
     if let Some(sub) = matches.subcommand_matches(WIFI_COMMAND) {
         let auth = match sub.value_of("mode") {
             Some("WEP") => payloads::Authentication::WEP,
@@ -121,7 +137,6 @@ fn main() {
         _ => false,
     };
 
-    let code = QrCode::with_error_correction_level(payload, EcLevel::H).unwrap();
 
     let bit_array = code.to_colors();
 
