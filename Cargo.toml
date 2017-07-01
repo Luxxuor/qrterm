@@ -17,6 +17,9 @@ image = "*"
 regex = "*"
 lazy_static = "*"
 
+[profile.release]
+lto = true
+
 [[bin]]
 bench = false
 path = "src/main.rs"
