@@ -105,6 +105,13 @@ fn main() {
 
     // deduce the string payload 
     let payload = get_payload(&matches);
+
+    // should we draw a white border (safe zone) around the code?
+    let safe: bool = match matches.occurrences_of("safe_zone") {
+        0 => true,
+        _ => false,
+    };
+
     // what error level can we expect? always defaults to "H"
     let error: EcLevel = match matches.value_of("error").unwrap() {
         "L" => EcLevel::L,
@@ -154,10 +161,6 @@ fn get_payload(matches: &clap::ArgMatches) -> String {
     }
 }
 
-    let safe: bool = match matches.occurrences_of("safe_zone") {
-        0 => true,
-        _ => false,
-    };
 // save to a file at the path
 fn save(code: &QrCode, safe: bool, path: &str) {
     // render to a image struct
