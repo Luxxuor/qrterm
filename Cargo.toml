@@ -5,7 +5,7 @@ authors = ["Lukas Reuter <lukas@bootsmann-games.de>"]
 description = "A simple program to generate and display QR-Codes in the Terminal"
 homepage = "https://github.com/Luxxuor/qrterm"
 repository = "https://github.com/Luxxuor/qrterm"
-keywords = ["qr", "terminal", "tool"]
+keywords = ["qr", "terminal", "tool", "cli"]
 license = "mit"
 
 [dependencies]
