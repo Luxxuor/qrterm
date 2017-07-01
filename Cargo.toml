@@ -16,6 +16,7 @@ clap = "*"
 image = "0.12.*"
 regex = "*"
 lazy_static = "*"
+urlparse = "*"
 
 [profile.release]
 lto = true
