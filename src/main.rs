@@ -8,7 +8,7 @@ extern crate termion;
 extern crate image;
 extern crate regex;
 
-use clap::{App, Arg, SubCommand};
+use clap::{App, Arg, SubCommand, AppSettings};
 use qrcode::{QrCode, EcLevel};
 use termion::color;
 
@@ -38,6 +38,7 @@ fn main() {
         .version(crate_version!())
         .author(crate_authors!("\n"))
         .about(crate_description!())
+        .global_setting(AppSettings::SubcommandsNegateReqs)
             .global(true)
             .required(false)
             .short("s")
