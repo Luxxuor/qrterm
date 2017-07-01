@@ -41,17 +41,17 @@ pub fn mail_string(receiver: &str,
                    message: &str,
                    encoding: &MailEncoding)
                    -> String {
-    match encoding {
-        &MailEncoding::MAILTO => {
+    match *encoding {
+        MailEncoding::MAILTO => {
             String::from(format!("mailto:{}?subject={}&body={}", receiver, subject, message))
         }
-        &MailEncoding::MATMSG => {
+        MailEncoding::MATMSG => {
             String::from(format!("MATMSG:TO:{};SUB:{};BODY:{};;",
                                  receiver,
                                  escape_input(subject, false),
                                  escape_input(message, false)))
         }
-        &MailEncoding::SMTP => {
+        MailEncoding::SMTP => {
             String::from(format!("SMTP:{}:{}:{}",
                                  receiver,
                                  escape_input(subject, true),
@@ -66,7 +66,7 @@ pub fn phone_string(number: &str) -> String {
 
 pub fn url_string(url: &str) -> String {
     if !url.starts_with("http") {
-        "http://".to_string() + &url
+        "http://".to_string() + url
     } else {
         String::from(url)
     }
