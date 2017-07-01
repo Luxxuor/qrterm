@@ -94,7 +94,8 @@ fn main() {
 
     let matches = app.get_matches();
 
-    let payload: String;
+    // deduce the string payload 
+    let payload = get_payload(&matches);
     // what error level can we expect? always defaults to "H"
     let error: EcLevel = match matches.value_of("error").unwrap() {
         "L" => EcLevel::L,
@@ -103,34 +104,36 @@ fn main() {
         &_ => EcLevel::H,
     };
     let code = QrCode::with_error_correction_level(payload, error).unwrap();
+// deduces wich kind of string we are going to encode
+fn get_payload(matches: &clap::ArgMatches) -> String {
     if let Some(sub) = matches.subcommand_matches(WIFI_COMMAND) {
         let auth = match sub.value_of("mode") {
             Some("WEP") => payloads::Authentication::WEP,
             Some("WPA") => payloads::Authentication::WPA,
             _ => payloads::Authentication::nopass,
         };
-        payload = payloads::wifi_string(sub.value_of("ssid").unwrap(),
-                                        sub.value_of("pwd").unwrap(),
-                                        &auth,
-                                        sub.value_of("hidden").unwrap() == "true");
+        return payloads::wifi_string(sub.value_of("ssid").unwrap(),
+                                     sub.value_of("pwd").unwrap(),
+                                     &auth,
+                                     sub.value_of("hidden").unwrap() == "true");
     } else if let Some(sub) = matches.subcommand_matches(MAIL_COMMAND) {
         let encoding = match sub.value_of("encoding") {
-            Some("MAILTO") => payloads::MailEncoding::MAILTO,
             Some("MATMSG") => payloads::MailEncoding::MATMSG,
             Some("SMTP") => payloads::MailEncoding::SMTP,
             _ => payloads::MailEncoding::MAILTO,
         };
-        payload = payloads::mail_string(sub.value_of("receiver").unwrap(),
-                                        sub.value_of("subject").unwrap(),
-                                        sub.value_of("message").unwrap(),
-                                        &encoding);
+        return payloads::mail_string(sub.value_of("receiver").unwrap(),
+                                     sub.value_of("subject").unwrap(),
+                                     sub.value_of("message").unwrap(),
+                                     &encoding);
     } else if let Some(sub) = matches.subcommand_matches(URL_COMMAND) {
-        payload = payloads::url_string(sub.value_of("url").unwrap());
+        return payloads::url_string(sub.value_of("url").unwrap());
     } else if let Some(sub) = matches.subcommand_matches(PHONE_COMMAND) {
-        payload = payloads::phone_string(sub.value_of("phone").unwrap());
+        return payloads::phone_string(sub.value_of("phone").unwrap());
     } else {
-        payload = String::from(matches.value_of("INPUT").unwrap());
+        return String::from(matches.value_of("INPUT").unwrap());
     }
+}
 
     let safe: bool = match matches.occurrences_of("safe_zone") {
         0 => true,
