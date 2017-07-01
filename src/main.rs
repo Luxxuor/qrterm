@@ -47,6 +47,9 @@ fn main() {
             .takes_value(false)
             )
             //TODO: subcmds are not working like expected, if you have one the system assumes you have many
+        .arg(Arg::with_name("INPUT")
+            .help("The input string to use")
+            .required(true))
         .subcommand(SubCommand::with_name(WIFI_COMMAND)
             .about("formats to a wifi access string")
             .arg(Arg::with_name("ssid").required(true))
@@ -78,10 +81,8 @@ fn main() {
             .about("formats to a phone number")
             .arg(Arg::with_name("number")
                 .required(true)
-                .value_name("NUMBER")))
-        .arg(Arg::with_name("INPUT")
-            .help("The input string to use")
-            .required_unless_one(&[WIFI_COMMAND, MAIL_COMMAND, URL_COMMAND, PHONE_COMMAND]));
+                .value_name("NUMBER"))
+        );
 
     let matches = app.get_matches();
 
