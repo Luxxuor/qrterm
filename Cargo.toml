@@ -1,6 +1,6 @@
 [package]
 name = "qrterm"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Lukas Reuter <lukas@bootsmann-games.de>"]
 description = "A simple program to generate and display QR-Codes in the Terminal"
 homepage = "https://github.com/Luxxuor/qrterm"
@@ -9,11 +9,11 @@ keywords = ["qr", "terminal", "tool"]
 license = "mit"
 
 [dependencies]
-qrcode = "*"
+qrcode = "0.2.*"
 rustty = "*"
 termion = "*"
 clap = "*"
-image = "*"
+image = "0.12.*"
 regex = "*"
 lazy_static = "*"
 

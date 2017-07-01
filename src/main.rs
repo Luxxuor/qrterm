@@ -192,7 +192,8 @@ fn draw(code: &QrCode, safe: bool) {
             print!("{}      ", color::Bg(color::LightWhite));
         }
 
-        if *item == qrcode::types::Color::Dark {
+        // draw black or white blocks
+        if *item {
             print!("{}  ", color::Bg(color::Black));
         } else {
             print!("{}  ", color::Bg(color::LightWhite));
