@@ -78,6 +78,21 @@ pub fn sms_string(number: &str, subject: &str, encoding: &SMSEncoding) -> String
     }
 }
 
+#[derive(Debug)]
+#[allow(non_camel_case_types)]
+pub enum MMSEncoding
+{
+    MMS,
+    MMSTO
+}
+
+pub fn mms_string(number: &str, subject: &str, encoding: &MMSEncoding) -> String {
+    match *encoding {
+        MMSEncoding::MMSTO => format!("mmsto:{}?subject={}", number, uri_escape(subject)),
+        MMSEncoding::MMS => format!("mms:{}?body={}", number, uri_escape(subject))
+    }
+}
+
 pub fn phone_string(number: &str) -> String {
     String::from(format!("tel:{}", number))
 }

@@ -21,7 +21,7 @@ mod payloads;
 const WIFI_COMMAND: &'static str = "wifi";
 const MAIL_COMMAND: &'static str = "mail";
 const SMS_COMMAND: &'static str = "sms";
-// const MMS_COMMAND: &'static str = "mms";
+const MMS_COMMAND: &'static str = "mms";
 // const GEO_COMMAND: &'static str = "geo";
 const PHONE_COMMAND: &'static str = "phone";
 // const SKYPE_COMMAND: &'static str = "skype";
@@ -124,6 +124,14 @@ fn get_payload(matches: &clap::ArgMatches) -> String {
             _ => payloads::SMSEncoding::SMS,
         };
         return payloads::sms_string(sub.value_of("number").unwrap(),
+                                    sub.value_of("subject").unwrap(),
+                                    &encoding);
+    } else if let Some(sub) = matches.subcommand_matches(MMS_COMMAND) {
+        let encoding = match sub.value_of("encoding") {
+            Some("MMSTO") => payloads::MMSEncoding::MMSTO,
+            _ => payloads::MMSEncoding::MMS,
+        };
+        return payloads::mms_string(sub.value_of("number").unwrap(),
                                     sub.value_of("subject").unwrap(),
                                     &encoding);
     } else {
@@ -277,4 +285,11 @@ fn build_cli() -> App<'static, 'static> {
             .arg(Arg::with_name("encoding")
                 .possible_values(&["SMS", "SMSTO", "SMS_iOS"])
                 .default_value("SMS")))
+        .subcommand(SubCommand::with_name(MMS_COMMAND)
+            .about("formats to a mms message QR-Code")
+            .arg(Arg::with_name("number").required(true))
+            .arg(Arg::with_name("subject").default_value(""))
+            .arg(Arg::with_name("encoding")
+                .possible_values(&["MMS", "MMSTO"])
+                .default_value("MMS")))
 }
