@@ -11,3 +11,5 @@ Start-FileDownload "https://static.rust-lang.org/dist/$rust_install" -FileName $
 Start-Process -FilePath msiexec -ArgumentList /i, $rust_install, /quiet, INSTALLDIR="C:\Rust" -Wait
 $env:Path = $env:Path + ";C:\Rust\bin"
 rustc -vV
+cargo build --verbose
+cargo test --verbose
