@@ -7,6 +7,7 @@ extern crate qrcode;
 extern crate termion;
 extern crate image;
 extern crate regex;
+extern crate urlparse;
 
 use clap::{App, AppSettings, Arg, Shell, SubCommand};
 use qrcode::{QrCode, EcLevel};
@@ -19,7 +20,7 @@ mod payloads;
 
 const WIFI_COMMAND: &'static str = "wifi";
 const MAIL_COMMAND: &'static str = "mail";
-// const SMS_COMMAND: &'static str = "sms";
+const SMS_COMMAND: &'static str = "sms";
 // const MMS_COMMAND: &'static str = "mms";
 // const GEO_COMMAND: &'static str = "geo";
 const PHONE_COMMAND: &'static str = "phone";
@@ -34,6 +35,7 @@ const URL_COMMAND: &'static str = "url";
 - Add help texts for the subcommands
 - Add error texts for some exit branches (mostly file output and qrcode gen)
 - implement different types of qr payloads
+- write tests
 */
 fn main() {
     // create the cli interface with all subcommands, flags and args
@@ -105,11 +107,19 @@ fn main() {
             .arg(Arg::with_name("number")
                 .required(true)
                 .value_name("NUMBER")))
+        .subcommand(SubCommand::with_name(SMS_COMMAND)
+            .about("formats to a sms message QR-Code")
+            .arg(Arg::with_name("number").required(true))
+            .arg(Arg::with_name("subject").default_value(""))
+            .arg(Arg::with_name("encoding")
+                .possible_values(&["SMS", "SMSTO", "SMS_iOS"])
+                .default_value("SMS")))
         ; // let app = ...
-
+    
+    // match all input args
     let matches = app.clone().get_matches();
 
-    // write the completions first if they were requested, then exit
+    // write the completions if they were requested, then exit and dont print any qr-code
     if let Some(comp) = matches.subcommand_matches("completions") {
         let dir = comp.value_of("comp_dir").unwrap();
 
@@ -185,6 +195,16 @@ fn get_payload(matches: &clap::ArgMatches) -> String {
         return payloads::url_string(sub.value_of("url").unwrap());
     } else if let Some(sub) = matches.subcommand_matches(PHONE_COMMAND) {
         return payloads::phone_string(sub.value_of("phone").unwrap());
+
+    } else if let Some(sub) = matches.subcommand_matches(SMS_COMMAND) {
+        let encoding = match sub.value_of("encoding") {
+            Some("SMSTO") => payloads::SMSEncoding::SMSTO,
+            Some("SMS_iOS") => payloads::SMSEncoding::SMS_iOS,
+            _ => payloads::SMSEncoding::SMS,
+        };
+        return payloads::sms_string(sub.value_of("number").unwrap(),
+                                    sub.value_of("subject").unwrap(),
+                                    &encoding);
     } else {
         return String::from(matches.value_of("INPUT").unwrap());
     }

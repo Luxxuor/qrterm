@@ -1,4 +1,5 @@
 use regex::Regex;
+use urlparse::quote;
 
 #[derive(Debug)]
 #[allow(non_camel_case_types)]
@@ -43,21 +44,37 @@ pub fn mail_string(receiver: &str,
                    -> String {
     match *encoding {
         MailEncoding::MAILTO => {
-            //TODO: we should uri.dataescape the subject and the message
-            String::from(format!("mailto:{}?subject={}&body={}", receiver, subject, message))
+            format!("mailto:{}?subject={}&body={}", receiver, uri_escape(subject), uri_escape(message))
         }
         MailEncoding::MATMSG => {
-            String::from(format!("MATMSG:TO:{};SUB:{};BODY:{};;",
-                                 receiver,
-                                 escape_input(subject, false),
-                                 escape_input(message, false)))
+            format!("MATMSG:TO:{};SUB:{};BODY:{};;",
+                        receiver,
+                        escape_input(subject, false),
+                        escape_input(message, false))
         }
         MailEncoding::SMTP => {
-            String::from(format!("SMTP:{}:{}:{}",
-                                 receiver,
-                                 escape_input(subject, true),
-                                 escape_input(message, true)))
+            format!("SMTP:{}:{}:{}",
+                        receiver,
+                        escape_input(subject, true),
+                        escape_input(message, true))
         }
+    }
+}
+
+#[derive(Debug)]
+#[allow(non_camel_case_types)]
+pub enum SMSEncoding
+{
+    SMS,
+    SMSTO,
+    SMS_iOS
+}
+
+pub fn sms_string(number: &str, subject: &str, encoding: &SMSEncoding) -> String {
+    match *encoding {
+        SMSEncoding::SMS => format!("sms:{}?body={}", number, uri_escape(subject)),
+        SMSEncoding::SMS_iOS => format!("sms:{};body={}", number, uri_escape(subject)),
+        SMSEncoding::SMSTO => format!("SMSTO:{}:{}", number, subject),
     }
 }
 
@@ -89,6 +106,10 @@ fn escape_input(inp: &str, simple: bool) -> String {
         n = str::replace(&n, c, &("\\".to_string() + c));
     }
     n
+}
+
+fn uri_escape(inp: &str) -> String {
+    quote(inp, b"").ok().unwrap()
 }
 
 #[allow(unknown_lints)]
