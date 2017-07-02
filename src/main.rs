@@ -38,86 +38,8 @@ const URL_COMMAND: &'static str = "url";
 - write tests
 */
 fn main() {
-    // create the cli interface with all subcommands, flags and args
-    let mut app = App::new(crate_name!())
-        .version(crate_version!())
-        .author(crate_authors!("\n"))
-        .about(crate_description!())
-        .global_setting(AppSettings::SubcommandsNegateReqs)
-        .arg(Arg::with_name("safe_zone")
-            .global(true)
-            .short("s").long("safe-zone")
-            .help("Sets wether the safe zone around the code should be drawn or not.")
-            .takes_value(false))
-        .arg(Arg::with_name("output")
-            .global(true)
-            .short("o").long("output")
-            .help("Prints the QR-Code to a file. The image format is derived from the file extension. Currently only jpeg and png files are supported.")
-            .value_name("FILE"))
-        .arg(Arg::with_name("error")
-            .global(true)
-            .short("e").long("error")
-            .help("Set the desired error correction level.")
-            .value_name("LEVEL")
-            .possible_values(&["L", "M", "Q", "H"])
-            .default_value("H"))
-        .arg(Arg::with_name("INPUT")
-            .help("The input string to use")
-            .required(true))
-        .subcommand(SubCommand::with_name("completions")
-            .about("Outputs completion files for various shells.")
-            .arg(Arg::with_name("comp_dir")
-                .required(true)
-                .help("The directory to write the completion file to.")
-                .value_name("DIR"))
-            .arg(Arg::with_name("shell")
-                .long("shell")
-                .help("For which shell the completions should be generated for.")
-                .value_name("SHELL")
-                .possible_values(&["bash", "zsh", "fish", "ps"])
-                .default_value("bash")))
-        .subcommand(SubCommand::with_name(WIFI_COMMAND)
-            .about("formats to a wifi access string QR-Code")
-            .arg(Arg::with_name("ssid").required(true))
-            .arg(Arg::with_name("pwd").required(true))
-            .arg(Arg::with_name("mode")
-                .value_name("MODE")
-                .possible_values(&["WEP", "WPA", "nopass"])
-                .default_value("WPA"))
-            .arg(Arg::with_name("hidden")
-                .value_name("HIDDEN")
-                .possible_values(&["true", "false"])
-                .default_value("false")))
-        .subcommand(SubCommand::with_name(MAIL_COMMAND)
-            .about("formats to a mail adress string QR-Code")
-            .arg(Arg::with_name("receiver").required(true))
-            .arg(Arg::with_name("subject"))
-            .arg(Arg::with_name("message"))
-            .arg(Arg::with_name("encoding")
-                .value_name("ENCODING")
-                .possible_values(&["MAILTO", "MATMSG", "SMTP"])
-                .default_value("MAILTO")))
-        .subcommand(SubCommand::with_name(URL_COMMAND)
-            .about("formats to an URL QR-Code")
-            .arg(Arg::with_name("url")
-                .required(true)
-                .value_name("URL")))
-        .subcommand(SubCommand::with_name(PHONE_COMMAND)
-            .about("formats to a phone number QR-Code")
-            .arg(Arg::with_name("number")
-                .required(true)
-                .value_name("NUMBER")))
-        .subcommand(SubCommand::with_name(SMS_COMMAND)
-            .about("formats to a sms message QR-Code")
-            .arg(Arg::with_name("number").required(true))
-            .arg(Arg::with_name("subject").default_value(""))
-            .arg(Arg::with_name("encoding")
-                .possible_values(&["SMS", "SMSTO", "SMS_iOS"])
-                .default_value("SMS")))
-        ; // let app = ...
-    
     // match all input args
-    let matches = app.clone().get_matches();
+    let matches = build_cli().get_matches();
 
     // write the completions if they were requested, then exit and dont print any qr-code
     if let Some(comp) = matches.subcommand_matches("completions") {
@@ -133,7 +55,7 @@ fn main() {
         // create directory if necessary
         fs::create_dir_all(&dir).unwrap();
 
-        // let mut app = app::app_short();
+        let mut app = build_cli();
         app.gen_completions("qr", shell, dir);
 
         println!("Completion file for the {:?} shell was writen to: {:?}", shell, dir);
@@ -195,7 +117,6 @@ fn get_payload(matches: &clap::ArgMatches) -> String {
         return payloads::url_string(sub.value_of("url").unwrap());
     } else if let Some(sub) = matches.subcommand_matches(PHONE_COMMAND) {
         return payloads::phone_string(sub.value_of("phone").unwrap());
-
     } else if let Some(sub) = matches.subcommand_matches(SMS_COMMAND) {
         let encoding = match sub.value_of("encoding") {
             Some("SMSTO") => payloads::SMSEncoding::SMSTO,
@@ -277,4 +198,83 @@ fn draw(code: &QrCode, safe: bool) {
             }
         }
     }
+}
+
+// create the interface for the app with all subcommands, flags and args
+fn build_cli() -> App<'static, 'static> {
+    App::new(crate_name!())
+        .version(crate_version!())
+        .author(crate_authors!("\n"))
+        .about(crate_description!())
+        .global_setting(AppSettings::SubcommandsNegateReqs)
+        .arg(Arg::with_name("safe_zone")
+            .global(true)
+            .short("s").long("safe-zone")
+            .help("Sets wether the safe zone around the code should be drawn or not.")
+            .takes_value(false))
+        .arg(Arg::with_name("output")
+            .global(true)
+            .short("o").long("output")
+            .help("Prints the QR-Code to a file. The image format is derived from the file extension. Currently only jpeg and png files are supported.")
+            .value_name("FILE"))
+        .arg(Arg::with_name("error")
+            .global(true)
+            .short("e").long("error")
+            .help("Set the desired error correction level.")
+            .value_name("LEVEL")
+            .possible_values(&["L", "M", "Q", "H"])
+            .default_value("H"))
+        .arg(Arg::with_name("INPUT")
+            .help("The input string to use")
+            .required(true))
+        .subcommand(SubCommand::with_name("completions")
+            .about("Outputs completion files for various shells.")
+            .arg(Arg::with_name("comp_dir")
+                .required(true)
+                .help("The directory to write the completion file to.")
+                .value_name("DIR"))
+            .arg(Arg::with_name("shell")
+                .long("shell")
+                .help("For which shell the completions should be generated for.")
+                .value_name("SHELL")
+                .possible_values(&["bash", "zsh", "fish", "ps"])
+                .default_value("bash")))
+        .subcommand(SubCommand::with_name(WIFI_COMMAND)
+            .about("formats to a wifi access string QR-Code")
+            .arg(Arg::with_name("ssid").required(true))
+            .arg(Arg::with_name("pwd").required(true))
+            .arg(Arg::with_name("mode")
+                .value_name("MODE")
+                .possible_values(&["WEP", "WPA", "nopass"])
+                .default_value("WPA"))
+            .arg(Arg::with_name("hidden")
+                .value_name("HIDDEN")
+                .possible_values(&["true", "false"])
+                .default_value("false")))
+        .subcommand(SubCommand::with_name(MAIL_COMMAND)
+            .about("formats to a mail adress string QR-Code")
+            .arg(Arg::with_name("receiver").required(true))
+            .arg(Arg::with_name("subject"))
+            .arg(Arg::with_name("message"))
+            .arg(Arg::with_name("encoding")
+                .value_name("ENCODING")
+                .possible_values(&["MAILTO", "MATMSG", "SMTP"])
+                .default_value("MAILTO")))
+        .subcommand(SubCommand::with_name(URL_COMMAND)
+            .about("formats to an URL QR-Code")
+            .arg(Arg::with_name("url")
+                .required(true)
+                .value_name("URL")))
+        .subcommand(SubCommand::with_name(PHONE_COMMAND)
+            .about("formats to a phone number QR-Code")
+            .arg(Arg::with_name("number")
+                .required(true)
+                .value_name("NUMBER")))
+        .subcommand(SubCommand::with_name(SMS_COMMAND)
+            .about("formats to a sms message QR-Code")
+            .arg(Arg::with_name("number").required(true))
+            .arg(Arg::with_name("subject").default_value(""))
+            .arg(Arg::with_name("encoding")
+                .possible_values(&["SMS", "SMSTO", "SMS_iOS"])
+                .default_value("SMS")))
 }
