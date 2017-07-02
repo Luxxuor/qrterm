@@ -93,6 +93,25 @@ pub fn mms_string(number: &str, subject: &str, encoding: &MMSEncoding) -> String
     }
 }
 
+#[derive(Debug)]
+#[allow(non_camel_case_types)]
+pub enum GeolocationEncoding
+{
+    GEO,
+    GoogleMaps
+}
+
+pub fn geo_string(latitude: &str, longitude: &str, encoding: &GeolocationEncoding) -> String
+{
+    let lat = latitude.replace(",", ".");
+    let long = longitude.replace(",", ".");
+
+    match *encoding {
+        GeolocationEncoding::GEO => format!("geo:{},{}", lat, long),
+        GeolocationEncoding::GoogleMaps => format!("http://maps.google.com/maps?q={},{}", lat, long)
+    }
+}
+
 pub fn phone_string(number: &str) -> String {
     String::from(format!("tel:{}", number))
 }

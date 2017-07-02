@@ -22,7 +22,7 @@ const WIFI_COMMAND: &'static str = "wifi";
 const MAIL_COMMAND: &'static str = "mail";
 const SMS_COMMAND: &'static str = "sms";
 const MMS_COMMAND: &'static str = "mms";
-// const GEO_COMMAND: &'static str = "geo";
+const GEO_COMMAND: &'static str = "geo";
 const PHONE_COMMAND: &'static str = "phone";
 // const SKYPE_COMMAND: &'static str = "skype";
 const URL_COMMAND: &'static str = "url";
@@ -133,6 +133,14 @@ fn get_payload(matches: &clap::ArgMatches) -> String {
         };
         return payloads::mms_string(sub.value_of("number").unwrap(),
                                     sub.value_of("subject").unwrap(),
+                                    &encoding);
+    } else if let Some(sub) = matches.subcommand_matches(GEO_COMMAND) {
+        let encoding = match sub.value_of("encoding") {
+            Some("GoogleMaps") => payloads::GeolocationEncoding::GoogleMaps,
+            _ => payloads::GeolocationEncoding::GEO,
+        };
+        return payloads::geo_string(sub.value_of("latitude").unwrap(),
+                                    sub.value_of("longitude").unwrap(),
                                     &encoding);
     } else {
         return String::from(matches.value_of("INPUT").unwrap());
@@ -292,4 +300,11 @@ fn build_cli() -> App<'static, 'static> {
             .arg(Arg::with_name("encoding")
                 .possible_values(&["MMS", "MMSTO"])
                 .default_value("MMS")))
+        .subcommand(SubCommand::with_name(GEO_COMMAND)
+            .about("formats to a geospacial location QR-Code")
+            .arg(Arg::with_name("latitude").required(true))
+            .arg(Arg::with_name("longitude").required(true))
+            .arg(Arg::with_name("encoding")
+                .possible_values(&["GEO", "GoogleMaps"])
+                .default_value("GEO")))
 }
