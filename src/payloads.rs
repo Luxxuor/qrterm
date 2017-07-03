@@ -116,8 +116,12 @@ pub fn skype_string(inp: &str) -> String {
     format!("skype:{}?call", inp)
 }
 
+pub fn whatsapp_string(message: &str) -> String {
+    format!("whatsapp://send?text={}", uri_escape(message))
+}
+
 pub fn phone_string(number: &str) -> String {
-    String::from(format!("tel:{}", number))
+    format!("tel:{}", number)
 }
 
 pub fn url_string(url: &str) -> String {

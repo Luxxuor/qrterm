@@ -25,6 +25,7 @@ const MMS_COMMAND: &'static str = "mms";
 const GEO_COMMAND: &'static str = "geo";
 const PHONE_COMMAND: &'static str = "phone";
 const SKYPE_COMMAND: &'static str = "skype";
+const WHATSAPP_COMMAND: &'static str = "whatsapp";
 const URL_COMMAND: &'static str = "url";
 // const BOOKMARK_COMMAND: &'static str = "bookmark";
 // const BITCOIN_COMMAND: &'static str = "bitcoin";
@@ -119,6 +120,8 @@ fn get_payload(matches: &clap::ArgMatches) -> String {
         return payloads::phone_string(sub.value_of("phone").unwrap());
     } else if let Some(sub) = matches.subcommand_matches(SKYPE_COMMAND) {
         return payloads::skype_string(sub.value_of("name").unwrap());
+    } else if let Some(sub) = matches.subcommand_matches(WHATSAPP_COMMAND) {
+        return payloads::whatsapp_string(sub.value_of("message").unwrap());
     } else if let Some(sub) = matches.subcommand_matches(SMS_COMMAND) {
         let encoding = match sub.value_of("encoding") {
             Some("SMSTO") => payloads::SMSEncoding::SMSTO,
@@ -293,6 +296,11 @@ fn build_cli() -> App<'static, 'static> {
             .arg(Arg::with_name("name")
                 .required(true)
                 .value_name("HANDLE")))
+        .subcommand(SubCommand::with_name(WHATSAPP_COMMAND)
+            .about("formats to a whatsapp message QR-Code")
+            .arg(Arg::with_name("message")
+                .required(true)
+                .value_name("MESSAGE")))
         .subcommand(SubCommand::with_name(SMS_COMMAND)
             .about("formats to a sms message QR-Code")
             .arg(Arg::with_name("number").required(true))
