@@ -120,6 +120,10 @@ pub fn whatsapp_string(message: &str) -> String {
     format!("whatsapp://send?text={}", uri_escape(message))
 }
 
+pub fn bookmark_string(title: &str, url: &str) -> String {
+    format!("MEBKM:TITLE:{};URL:{};;", escape_input(title, false), escape_input(url, false))
+}
+
 pub fn phone_string(number: &str) -> String {
     format!("tel:{}", number)
 }

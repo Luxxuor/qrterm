@@ -27,7 +27,7 @@ const PHONE_COMMAND: &'static str = "phone";
 const SKYPE_COMMAND: &'static str = "skype";
 const WHATSAPP_COMMAND: &'static str = "whatsapp";
 const URL_COMMAND: &'static str = "url";
-// const BOOKMARK_COMMAND: &'static str = "bookmark";
+const BOOKMARK_COMMAND: &'static str = "bookmark";
 // const BITCOIN_COMMAND: &'static str = "bitcoin";
 // const GIRO_COMMAND: &'static str = "giro";
 // const CALENDAR_COMMAND: &'static str = "calendar";
@@ -147,6 +147,9 @@ fn get_payload(matches: &clap::ArgMatches) -> String {
         return payloads::geo_string(sub.value_of("latitude").unwrap(),
                                     sub.value_of("longitude").unwrap(),
                                     &encoding);
+    } else if let Some(sub) = matches.subcommand_matches(BOOKMARK_COMMAND) {
+        return payloads::bookmark_string(sub.value_of("title").unwrap(),
+                                         sub.value_of("url").unwrap());                                    
     } else {
         return String::from(matches.value_of("INPUT").unwrap());
     }
@@ -322,4 +325,8 @@ fn build_cli() -> App<'static, 'static> {
             .arg(Arg::with_name("encoding")
                 .possible_values(&["GEO", "GoogleMaps"])
                 .default_value("GEO")))
+        .subcommand(SubCommand::with_name(BOOKMARK_COMMAND)
+            .about("formats to a bookmark QR-Code")
+            .arg(Arg::with_name("title").required(true))
+            .arg(Arg::with_name("url").required(true)))
 }
