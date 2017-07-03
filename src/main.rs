@@ -36,7 +36,8 @@ const BOOKMARK_COMMAND: &'static str = "bookmark";
 - Add help texts for the subcommands
 - Add error texts for some exit branches (mostly file output and qrcode gen)
 - implement different types of qr payloads
-- write tests
+- write unit tests for the payloads
+- write integration tests for edge case inputs
 */
 fn main() {
     // match all input args
