@@ -112,6 +112,10 @@ pub fn geo_string(latitude: &str, longitude: &str, encoding: &GeolocationEncodin
     }
 }
 
+pub fn skype_string(inp: &str) -> String {
+    format!("skype:{}?call", inp)
+}
+
 pub fn phone_string(number: &str) -> String {
     String::from(format!("tel:{}", number))
 }
