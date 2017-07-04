@@ -4,15 +4,16 @@ extern crate lazy_static;
 extern crate clap;
 
 extern crate qrcode;
-extern crate termion;
 extern crate image;
 extern crate regex;
 extern crate urlparse;
+extern crate term;
 
 use clap::{App, AppSettings, Arg, Shell, SubCommand};
 use qrcode::{QrCode, EcLevel};
-use termion::color;
+use term::color;
 use image::GrayImage;
+use std::io::prelude::*;
 use std::process::exit;
 use std::fs;
 
@@ -174,6 +175,9 @@ fn draw(code: &QrCode, safe: bool) {
     // get "bit" array
     let bit_array = code.to_vec();
 
+    // get the terminal output pipe
+    let mut t = term::stdout().unwrap();
+
     // get the code width and add extra space for the safe zone
     let w = code.width();
     let wide = w + 6;
@@ -181,9 +185,12 @@ fn draw(code: &QrCode, safe: bool) {
     // draw the first white safe zone
     if safe {
         for a in 1..(wide * 3) + 1 {
-            print!("{}  ", color::Bg(color::LightWhite));
+
+            t.bg(term::color::BRIGHT_WHITE).unwrap();
+            write!(t, "  ").unwrap();
             if a % wide == 0 {
-                println!("{}", color::Bg(color::Reset));
+                t.reset().unwrap();
+                writeln!(t, "").unwrap();
             }
         }
     }
@@ -192,37 +199,45 @@ fn draw(code: &QrCode, safe: bool) {
     for (i, item) in bit_array.iter().enumerate() {
         // left safe zone
         if safe && i % w == 0 {
-            print!("{}      ", color::Bg(color::LightWhite));
+            t.bg(term::color::BRIGHT_WHITE).unwrap();
+            write!(t, "      ").unwrap();
         }
 
         // draw black or white blocks
         if *item {
-            print!("{}  ", color::Bg(color::Black));
+            t.bg(color::BLACK).unwrap();
+            write!(t, "  ").unwrap();
         } else {
-            print!("{}  ", color::Bg(color::LightWhite));
+            t.bg(term::color::BRIGHT_WHITE).unwrap();
+            write!(t, "  ").unwrap();
         }
 
         if (i + 1) % w == 0 {
             if safe {
-                //draw right safe zone
-                println!("{}      {}",
-                         color::Bg(color::LightWhite),
-                         color::Bg(color::Reset));
-            } else {
-                println!("{}", color::Bg(color::Reset));
+                // draw right safe zone
+                t.bg(term::color::BRIGHT_WHITE).unwrap();
+                write!(t, "      ").unwrap();
+            }
+            t.reset().unwrap();
+            writeln!(t, "").unwrap();
+        }
+    }
+
+    // draw the last white safe zone
+    if safe {
+        for a in 1..(wide * 3) + 1 {
+            t.bg(term::color::BRIGHT_WHITE).unwrap();
+            write!(t, "  ").unwrap();
+            if a % wide == 0 {
+                t.reset().unwrap();
+                writeln!(t, "").unwrap();
             }
         }
     }
 
-    //Draw the last white safe zone
-    if safe {
-        for a in 1..(wide * 3) + 1 {
-            print!("{}  ", color::Bg(color::LightWhite));
-            if a % wide == 0 {
-                println!("{}", color::Bg(color::Reset));
-            }
-        }
-    }
+    // reset to normal color and flush write buffer
+    t.reset().unwrap();
+    t.flush().unwrap();
 }
 
 // create the interface for the app with all subcommands, flags and args
