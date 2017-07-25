@@ -10,13 +10,16 @@ license = "mit"
 
 [dependencies]
 qrcode = "0.2.*"
-rustty = "*"
-term = "*"
-clap = "*"
+rustty = "0.1.*"
+term = "0.4.*"
+clap = "2.*"
 image = "0.12.*"
-regex = "*"
-lazy_static = "*"
-urlparse = "*"
+regex = "0.2.*"
+lazy_static = "0.2.*"
+urlparse = "0.7.*"
+
+[dev-dependencies]
+assert_cli = "*"
 
 [profile.release]
 lto = true
