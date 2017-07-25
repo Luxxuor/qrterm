@@ -22,11 +22,13 @@ pub fn wifi_string(ssid: &str, password: &str, mode: &Authentication, is_hidden:
     };
     let hidden = if is_hidden { "H:true" } else { "" };
 
-    return format!("WIFI:T:{:?};S:{};P:{};{};",
-                   mode,
-                   ssid_n,
-                   password_n,
-                   hidden);
+    return format!(
+        "WIFI:T:{:?};S:{};P:{};{};",
+        mode,
+        ssid_n,
+        password_n,
+        hidden
+    );
 }
 
 #[derive(Debug)]
@@ -37,37 +39,46 @@ pub enum MailEncoding {
     SMTP,
 }
 
-pub fn mail_string(receiver: &str,
-                   subject: &str,
-                   message: &str,
-                   encoding: &MailEncoding)
-                   -> String {
+pub fn mail_string(
+    receiver: &str,
+    subject: &str,
+    message: &str,
+    encoding: &MailEncoding,
+) -> String {
     match *encoding {
         MailEncoding::MAILTO => {
-            format!("mailto:{}?subject={}&body={}", receiver, uri_escape(subject), uri_escape(message))
+            format!(
+                "mailto:{}?subject={}&body={}",
+                receiver,
+                uri_escape(subject),
+                uri_escape(message)
+            )
         }
         MailEncoding::MATMSG => {
-            format!("MATMSG:TO:{};SUB:{};BODY:{};;",
-                        receiver,
-                        escape_input(subject, false),
-                        escape_input(message, false))
+            format!(
+                "MATMSG:TO:{};SUB:{};BODY:{};;",
+                receiver,
+                escape_input(subject, false),
+                escape_input(message, false)
+            )
         }
         MailEncoding::SMTP => {
-            format!("SMTP:{}:{}:{}",
-                        receiver,
-                        escape_input(subject, true),
-                        escape_input(message, true))
+            format!(
+                "SMTP:{}:{}:{}",
+                receiver,
+                escape_input(subject, true),
+                escape_input(message, true)
+            )
         }
     }
 }
 
 #[derive(Debug)]
 #[allow(non_camel_case_types)]
-pub enum SMSEncoding
-{
+pub enum SMSEncoding {
     SMS,
     SMSTO,
-    SMS_iOS
+    SMS_iOS,
 }
 
 pub fn sms_string(number: &str, subject: &str, encoding: &SMSEncoding) -> String {
@@ -80,35 +91,34 @@ pub fn sms_string(number: &str, subject: &str, encoding: &SMSEncoding) -> String
 
 #[derive(Debug)]
 #[allow(non_camel_case_types)]
-pub enum MMSEncoding
-{
+pub enum MMSEncoding {
     MMS,
-    MMSTO
+    MMSTO,
 }
 
 pub fn mms_string(number: &str, subject: &str, encoding: &MMSEncoding) -> String {
     match *encoding {
         MMSEncoding::MMSTO => format!("mmsto:{}?subject={}", number, uri_escape(subject)),
-        MMSEncoding::MMS => format!("mms:{}?body={}", number, uri_escape(subject))
+        MMSEncoding::MMS => format!("mms:{}?body={}", number, uri_escape(subject)),
     }
 }
 
 #[derive(Debug)]
 #[allow(non_camel_case_types)]
-pub enum GeolocationEncoding
-{
+pub enum GeolocationEncoding {
     GEO,
-    GoogleMaps
+    GoogleMaps,
 }
 
-pub fn geo_string(latitude: &str, longitude: &str, encoding: &GeolocationEncoding) -> String
-{
+pub fn geo_string(latitude: &str, longitude: &str, encoding: &GeolocationEncoding) -> String {
     let lat = latitude.replace(",", ".");
     let long = longitude.replace(",", ".");
 
     match *encoding {
         GeolocationEncoding::GEO => format!("geo:{},{}", lat, long),
-        GeolocationEncoding::GoogleMaps => format!("http://maps.google.com/maps?q={},{}", lat, long)
+        GeolocationEncoding::GoogleMaps => {
+            format!("http://maps.google.com/maps?q={},{}", lat, long)
+        }
     }
 }
 
@@ -121,7 +131,11 @@ pub fn whatsapp_string(message: &str) -> String {
 }
 
 pub fn bookmark_string(title: &str, url: &str) -> String {
-    format!("MEBKM:TITLE:{};URL:{};;", escape_input(title, false), escape_input(url, false))
+    format!(
+        "MEBKM:TITLE:{};URL:{};;",
+        escape_input(title, false),
+        escape_input(url, false)
+    )
 }
 
 pub fn phone_string(number: &str) -> String {

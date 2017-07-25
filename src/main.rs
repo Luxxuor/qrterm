@@ -61,13 +61,17 @@ fn main() {
         let mut app = build_cli();
         app.gen_completions("qr", shell, dir);
 
-        println!("Completion file for the {:?} shell was writen to: {:?}", shell, dir);
+        println!(
+            "Completion file for the {:?} shell was writen to: {:?}",
+            shell,
+            dir
+        );
 
         // exit and dont generate a qr-code
         exit(0);
     }
 
-    // deduce the string payload 
+    // deduce the string payload
     let payload = get_payload(&matches);
 
     // should we draw a white border (safe zone) around the code?
@@ -102,20 +106,24 @@ fn get_payload(matches: &clap::ArgMatches) -> String {
             Some("WPA") => payloads::Authentication::WPA,
             _ => payloads::Authentication::nopass,
         };
-        return payloads::wifi_string(sub.value_of("ssid").unwrap(),
-                                     sub.value_of("pwd").unwrap(),
-                                     &auth,
-                                     sub.value_of("hidden").unwrap() == "true");
+        return payloads::wifi_string(
+            sub.value_of("ssid").unwrap(),
+            sub.value_of("pwd").unwrap(),
+            &auth,
+            sub.value_of("hidden").unwrap() == "true",
+        );
     } else if let Some(sub) = matches.subcommand_matches(MAIL_COMMAND) {
         let encoding = match sub.value_of("encoding") {
             Some("MATMSG") => payloads::MailEncoding::MATMSG,
             Some("SMTP") => payloads::MailEncoding::SMTP,
             _ => payloads::MailEncoding::MAILTO,
         };
-        return payloads::mail_string(sub.value_of("receiver").unwrap(),
-                                     sub.value_of("subject").unwrap(),
-                                     sub.value_of("message").unwrap(),
-                                     &encoding);
+        return payloads::mail_string(
+            sub.value_of("receiver").unwrap(),
+            sub.value_of("subject").unwrap(),
+            sub.value_of("message").unwrap(),
+            &encoding,
+        );
     } else if let Some(sub) = matches.subcommand_matches(URL_COMMAND) {
         return payloads::url_string(sub.value_of("url").unwrap());
     } else if let Some(sub) = matches.subcommand_matches(PHONE_COMMAND) {
@@ -130,28 +138,36 @@ fn get_payload(matches: &clap::ArgMatches) -> String {
             Some("SMS_iOS") => payloads::SMSEncoding::SMS_iOS,
             _ => payloads::SMSEncoding::SMS,
         };
-        return payloads::sms_string(sub.value_of("number").unwrap(),
-                                    sub.value_of("subject").unwrap(),
-                                    &encoding);
+        return payloads::sms_string(
+            sub.value_of("number").unwrap(),
+            sub.value_of("subject").unwrap(),
+            &encoding,
+        );
     } else if let Some(sub) = matches.subcommand_matches(MMS_COMMAND) {
         let encoding = match sub.value_of("encoding") {
             Some("MMSTO") => payloads::MMSEncoding::MMSTO,
             _ => payloads::MMSEncoding::MMS,
         };
-        return payloads::mms_string(sub.value_of("number").unwrap(),
-                                    sub.value_of("subject").unwrap(),
-                                    &encoding);
+        return payloads::mms_string(
+            sub.value_of("number").unwrap(),
+            sub.value_of("subject").unwrap(),
+            &encoding,
+        );
     } else if let Some(sub) = matches.subcommand_matches(GEO_COMMAND) {
         let encoding = match sub.value_of("encoding") {
             Some("GoogleMaps") => payloads::GeolocationEncoding::GoogleMaps,
             _ => payloads::GeolocationEncoding::GEO,
         };
-        return payloads::geo_string(sub.value_of("latitude").unwrap(),
-                                    sub.value_of("longitude").unwrap(),
-                                    &encoding);
+        return payloads::geo_string(
+            sub.value_of("latitude").unwrap(),
+            sub.value_of("longitude").unwrap(),
+            &encoding,
+        );
     } else if let Some(sub) = matches.subcommand_matches(BOOKMARK_COMMAND) {
-        return payloads::bookmark_string(sub.value_of("title").unwrap(),
-                                         sub.value_of("url").unwrap());                                    
+        return payloads::bookmark_string(
+            sub.value_of("title").unwrap(),
+            sub.value_of("url").unwrap(),
+        );
     } else {
         return String::from(matches.value_of("INPUT").unwrap());
     }
@@ -165,8 +181,16 @@ fn save(code: &QrCode, safe: bool, path: &str) {
     // save the image
     match image.save(path) {
         Ok(..) => println!("Image successfully saved to: {:?}", path),
-        Err(e) => println!("Tried to create file but there was a problem: {:?}", 
-            if let Some(inner_err) = e.get_ref() { inner_err.to_string() } else { e.to_string() }),
+        Err(e) => {
+            println!(
+                "Tried to create file but there was a problem: {:?}",
+                if let Some(inner_err) = e.get_ref() {
+                    inner_err.to_string()
+                } else {
+                    e.to_string()
+                }
+            )
+        }
     };
 }
 
@@ -247,102 +271,151 @@ fn build_cli() -> App<'static, 'static> {
         .author(crate_authors!("\n"))
         .about(crate_description!())
         .global_setting(AppSettings::SubcommandsNegateReqs)
-        .arg(Arg::with_name("safe_zone")
-            .global(true)
-            .short("s").long("safe-zone")
-            .help("Sets wether the safe zone around the code should be drawn or not.")
-            .takes_value(false))
-        .arg(Arg::with_name("output")
-            .global(true)
-            .short("o").long("output")
-            .help("Prints the QR-Code to a file. The image format is derived from the file extension. Currently only jpeg and png files are supported.")
-            .value_name("FILE"))
-        .arg(Arg::with_name("error")
-            .global(true)
-            .short("e").long("error")
-            .help("Set the desired error correction level.")
-            .value_name("LEVEL")
-            .possible_values(&["L", "M", "Q", "H"])
-            .default_value("H"))
-        .arg(Arg::with_name("INPUT")
-            .help("The input string to use")
-            .required(true))
-        .subcommand(SubCommand::with_name("completions")
-            .about("Outputs completion files for various shells.")
-            .arg(Arg::with_name("comp_dir")
-                .required(true)
-                .help("The directory to write the completion file to.")
-                .value_name("DIR"))
-            .arg(Arg::with_name("shell")
-                .long("shell")
-                .help("For which shell the completions should be generated for.")
-                .value_name("SHELL")
-                .possible_values(&["bash", "zsh", "fish", "ps"])
-                .default_value("bash")))
-        .subcommand(SubCommand::with_name(WIFI_COMMAND)
-            .about("formats to a wifi access string QR-Code")
-            .arg(Arg::with_name("ssid").required(true))
-            .arg(Arg::with_name("pwd").required(true))
-            .arg(Arg::with_name("mode")
-                .value_name("MODE")
-                .possible_values(&["WEP", "WPA", "nopass"])
-                .default_value("WPA"))
-            .arg(Arg::with_name("hidden")
-                .value_name("HIDDEN")
-                .possible_values(&["true", "false"])
-                .default_value("false")))
-        .subcommand(SubCommand::with_name(MAIL_COMMAND)
-            .about("formats to a mail adress string QR-Code")
-            .arg(Arg::with_name("receiver").required(true))
-            .arg(Arg::with_name("subject"))
-            .arg(Arg::with_name("message"))
-            .arg(Arg::with_name("encoding")
-                .value_name("ENCODING")
-                .possible_values(&["MAILTO", "MATMSG", "SMTP"])
-                .default_value("MAILTO")))
-        .subcommand(SubCommand::with_name(URL_COMMAND)
-            .about("formats to an URL QR-Code")
-            .arg(Arg::with_name("url")
-                .required(true)
-                .value_name("URL")))
-        .subcommand(SubCommand::with_name(PHONE_COMMAND)
-            .about("formats to a phone number QR-Code")
-            .arg(Arg::with_name("number")
-                .required(true)
-                .value_name("NUMBER")))
-        .subcommand(SubCommand::with_name(SKYPE_COMMAND)
-            .about("formats to a skype call QR-Code")
-            .arg(Arg::with_name("name")
-                .required(true)
-                .value_name("HANDLE")))
-        .subcommand(SubCommand::with_name(WHATSAPP_COMMAND)
-            .about("formats to a whatsapp message QR-Code")
-            .arg(Arg::with_name("message")
-                .required(true)
-                .value_name("MESSAGE")))
-        .subcommand(SubCommand::with_name(SMS_COMMAND)
-            .about("formats to a sms message QR-Code")
-            .arg(Arg::with_name("number").required(true))
-            .arg(Arg::with_name("subject").default_value(""))
-            .arg(Arg::with_name("encoding")
-                .possible_values(&["SMS", "SMSTO", "SMS_iOS"])
-                .default_value("SMS")))
-        .subcommand(SubCommand::with_name(MMS_COMMAND)
-            .about("formats to a mms message QR-Code")
-            .arg(Arg::with_name("number").required(true))
-            .arg(Arg::with_name("subject").default_value(""))
-            .arg(Arg::with_name("encoding")
-                .possible_values(&["MMS", "MMSTO"])
-                .default_value("MMS")))
-        .subcommand(SubCommand::with_name(GEO_COMMAND)
-            .about("formats to a geospacial location QR-Code")
-            .arg(Arg::with_name("latitude").required(true))
-            .arg(Arg::with_name("longitude").required(true))
-            .arg(Arg::with_name("encoding")
-                .possible_values(&["GEO", "GoogleMaps"])
-                .default_value("GEO")))
-        .subcommand(SubCommand::with_name(BOOKMARK_COMMAND)
-            .about("formats to a bookmark QR-Code")
-            .arg(Arg::with_name("title").required(true))
-            .arg(Arg::with_name("url").required(true)))
+        .arg(
+            Arg::with_name("safe_zone")
+                .global(true)
+                .short("s")
+                .long("safe-zone")
+                .help(
+                    "Sets wether the safe zone around the code should be drawn or not.",
+                )
+                .takes_value(false),
+        )
+        .arg(
+            Arg::with_name("output")
+                .global(true)
+                .short("o")
+                .long("output")
+                .help(
+                    "Prints the QR-Code to a file.
+            The image format is derived from the file extension.
+            Currently only jpeg and png files are supported.",
+                )
+                .value_name("FILE"),
+        )
+        .arg(
+            Arg::with_name("error")
+                .global(true)
+                .short("e")
+                .long("error")
+                .help("Set the desired error correction level.")
+                .value_name("LEVEL")
+                .possible_values(&["L", "M", "Q", "H"])
+                .default_value("H"),
+        )
+        .arg(
+            Arg::with_name("INPUT")
+                .help("The input string to use")
+                .required(true),
+        )
+        .subcommand(
+            SubCommand::with_name("completions")
+                .about("Outputs completion files for various shells.")
+                .arg(
+                    Arg::with_name("comp_dir")
+                        .required(true)
+                        .help("The directory to write the completion file to.")
+                        .value_name("DIR"),
+                )
+                .arg(
+                    Arg::with_name("shell")
+                        .long("shell")
+                        .help("For which shell the completions should be generated for.")
+                        .value_name("SHELL")
+                        .possible_values(&["bash", "zsh", "fish", "ps"])
+                        .default_value("bash"),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name(WIFI_COMMAND)
+                .about("formats to a wifi access string QR-Code")
+                .arg(Arg::with_name("ssid").required(true))
+                .arg(Arg::with_name("pwd").required(true))
+                .arg(
+                    Arg::with_name("mode")
+                        .value_name("MODE")
+                        .possible_values(&["WEP", "WPA", "nopass"])
+                        .default_value("WPA"),
+                )
+                .arg(
+                    Arg::with_name("hidden")
+                        .value_name("HIDDEN")
+                        .possible_values(&["true", "false"])
+                        .default_value("false"),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name(MAIL_COMMAND)
+                .about("formats to a mail adress string QR-Code")
+                .arg(Arg::with_name("receiver").required(true))
+                .arg(Arg::with_name("subject"))
+                .arg(Arg::with_name("message"))
+                .arg(
+                    Arg::with_name("encoding")
+                        .value_name("ENCODING")
+                        .possible_values(&["MAILTO", "MATMSG", "SMTP"])
+                        .default_value("MAILTO"),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name(URL_COMMAND)
+                .about("formats to an URL QR-Code")
+                .arg(Arg::with_name("url").required(true).value_name("URL")),
+        )
+        .subcommand(
+            SubCommand::with_name(PHONE_COMMAND)
+                .about("formats to a phone number QR-Code")
+                .arg(Arg::with_name("number").required(true).value_name("NUMBER")),
+        )
+        .subcommand(
+            SubCommand::with_name(SKYPE_COMMAND)
+                .about("formats to a skype call QR-Code")
+                .arg(Arg::with_name("name").required(true).value_name("HANDLE")),
+        )
+        .subcommand(
+            SubCommand::with_name(WHATSAPP_COMMAND)
+                .about("formats to a whatsapp message QR-Code")
+                .arg(Arg::with_name("message").required(true).value_name(
+                    "MESSAGE",
+                )),
+        )
+        .subcommand(
+            SubCommand::with_name(SMS_COMMAND)
+                .about("formats to a sms message QR-Code")
+                .arg(Arg::with_name("number").required(true))
+                .arg(Arg::with_name("subject").default_value(""))
+                .arg(
+                    Arg::with_name("encoding")
+                        .possible_values(&["SMS", "SMSTO", "SMS_iOS"])
+                        .default_value("SMS"),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name(MMS_COMMAND)
+                .about("formats to a mms message QR-Code")
+                .arg(Arg::with_name("number").required(true))
+                .arg(Arg::with_name("subject").default_value(""))
+                .arg(
+                    Arg::with_name("encoding")
+                        .possible_values(&["MMS", "MMSTO"])
+                        .default_value("MMS"),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name(GEO_COMMAND)
+                .about("formats to a geospacial location QR-Code")
+                .arg(Arg::with_name("latitude").required(true))
+                .arg(Arg::with_name("longitude").required(true))
+                .arg(
+                    Arg::with_name("encoding")
+                        .possible_values(&["GEO", "GoogleMaps"])
+                        .default_value("GEO"),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name(BOOKMARK_COMMAND)
+                .about("formats to a bookmark QR-Code")
+                .arg(Arg::with_name("title").required(true))
+                .arg(Arg::with_name("url").required(true)),
+        )
 }
