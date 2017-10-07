@@ -9,13 +9,13 @@ keywords = ["qr", "terminal", "tool", "cli"]
 license = "mit"
 
 [dependencies]
-qrcode = "0.2.*"
 term = "0.4.*"
 clap = "2.*"
-image = "0.12.*"
 regex = "0.2.*"
 lazy_static = "0.2.*"
 urlparse = "0.7.*"
+qrcode = "0.4.*"
+image = "0.13.*"
 
 [dev-dependencies]
 assert_cli = "*"

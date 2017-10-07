@@ -12,7 +12,7 @@ extern crate term;
 use clap::{App, AppSettings, Arg, Shell, SubCommand};
 use qrcode::{QrCode, EcLevel};
 use term::color;
-use image::GrayImage;
+use image::Luma;
 use std::io::prelude::*;
 use std::process::exit;
 use std::fs;
@@ -176,7 +176,7 @@ fn get_payload(matches: &clap::ArgMatches) -> String {
 // save to a file at the path
 fn save(code: &QrCode, safe: bool, path: &str) {
     // render to a image struct
-    let image: GrayImage = code.render().quiet_zone(safe).to_image();
+    let image = code.render::<Luma<u8>>().quiet_zone(safe).build();
 
     // save the image
     match image.save(path) {
@@ -197,7 +197,7 @@ fn save(code: &QrCode, safe: bool, path: &str) {
 // draw to the terminal
 fn draw(code: &QrCode, safe: bool) {
     // get "bit" array
-    let bit_array = code.to_vec();
+    let bit_array = code.to_colors();
 
     // get the terminal output pipe
     let mut t = term::stdout().unwrap();
@@ -228,7 +228,7 @@ fn draw(code: &QrCode, safe: bool) {
         }
 
         // draw black or white blocks
-        if *item {
+        if *item == qrcode::Color::Dark {
             t.bg(color::BLACK).unwrap();
             write!(t, "  ").unwrap();
         } else {
