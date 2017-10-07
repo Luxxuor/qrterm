@@ -75,7 +75,7 @@ fn main() {
     let payload = get_payload(&matches);
 
     // should we draw a white border (safe zone) around the code?
-    let safe: bool = match matches.occurrences_of("safe_zone") {
+    let safe = match matches.occurrences_of("safe_zone") {
         0 => true,
         _ => false,
     };
@@ -209,8 +209,7 @@ fn draw(code: &QrCode, safe: bool) {
     // draw the first white safe zone
     if safe {
         for a in 1..(wide * 3) + 1 {
-
-            t.bg(term::color::BRIGHT_WHITE).unwrap();
+            t.bg(color::BRIGHT_WHITE).unwrap();
             write!(t, "  ").unwrap();
             if a % wide == 0 {
                 t.reset().unwrap();
@@ -223,7 +222,7 @@ fn draw(code: &QrCode, safe: bool) {
     for (i, item) in bit_array.iter().enumerate() {
         // left safe zone
         if safe && i % w == 0 {
-            t.bg(term::color::BRIGHT_WHITE).unwrap();
+            t.bg(color::BRIGHT_WHITE).unwrap();
             write!(t, "      ").unwrap();
         }
 
@@ -232,14 +231,14 @@ fn draw(code: &QrCode, safe: bool) {
             t.bg(color::BLACK).unwrap();
             write!(t, "  ").unwrap();
         } else {
-            t.bg(term::color::BRIGHT_WHITE).unwrap();
+            t.bg(color::BRIGHT_WHITE).unwrap();
             write!(t, "  ").unwrap();
         }
 
         if (i + 1) % w == 0 {
             if safe {
                 // draw right safe zone
-                t.bg(term::color::BRIGHT_WHITE).unwrap();
+                t.bg(color::BRIGHT_WHITE).unwrap();
                 write!(t, "      ").unwrap();
             }
             t.reset().unwrap();
@@ -250,7 +249,7 @@ fn draw(code: &QrCode, safe: bool) {
     // draw the last white safe zone
     if safe {
         for a in 1..(wide * 3) + 1 {
-            t.bg(term::color::BRIGHT_WHITE).unwrap();
+            t.bg(color::BRIGHT_WHITE).unwrap();
             write!(t, "  ").unwrap();
             if a % wide == 0 {
                 t.reset().unwrap();
