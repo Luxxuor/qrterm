@@ -58,8 +58,7 @@ fn main() {
         // create directory if necessary
         fs::create_dir_all(&dir).unwrap();
 
-        let mut app = build_cli();
-        app.gen_completions("qr", shell, dir);
+        build_cli().gen_completions("qr", shell, dir);
 
         println!(
             "Completion file for the {:?} shell was writen to: {:?}",
