@@ -142,6 +142,61 @@ pub fn phone_string(number: &str) -> String {
     format!("tel:{}", number)
 }
 
+pub fn bitcoin_string(
+    address: &str,
+    amount: Option<f64>,
+    label: Option<&str>,
+    message: Option<&str>,
+) -> String {
+    // used for our little filter/map magic
+    struct KeyValuePair {
+        key: String,
+        value: String,
+    }
+
+    let l = match label {
+        Some(x) => uri_escape(x),
+        None => "".to_string(),
+    };
+    let m = match message {
+        Some(x) => uri_escape(x),
+        None => "".to_string(),
+    };
+    let a = match amount {
+        Some(x) => format!("{0:.8}", x),
+        None => "".to_string(),
+    };
+
+    let mut query_values: Vec<KeyValuePair> = Vec::new();
+    query_values.push(KeyValuePair {
+        key: "label".to_string(),
+        value: l,
+    });
+    query_values.push(KeyValuePair {
+        key: "message".to_string(),
+        value: m,
+    });
+    query_values.push(KeyValuePair {
+        key: "amount".to_string(),
+        value: a,
+    });
+
+    let joined = query_values
+        .iter()
+        .filter(|&pair| !pair.value.is_empty())
+        .map(|pair| format!("{}={}", pair.key, pair.value))
+        .collect::<Vec<String>>()
+        .join("&");
+
+    let query = if !joined.is_empty() {
+        "?".to_string() + &joined
+    } else {
+        "".to_string()
+    };
+
+    return format!("bitcoin:{}{}", address, query);
+}
+
 pub fn url_string(url: &str) -> String {
     if !url.starts_with("http") {
         "http://".to_string() + url
