@@ -1,6 +1,6 @@
 [package]
 name = "qrterm"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Lukas Reuter <lukas@bootsmann-games.de>"]
 description = "A simple program to generate and display QR-Codes in the Terminal"
 homepage = "https://github.com/Luxxuor/qrterm"
