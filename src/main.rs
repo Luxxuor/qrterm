@@ -29,7 +29,7 @@ const SKYPE_COMMAND: &'static str = "skype";
 const WHATSAPP_COMMAND: &'static str = "whatsapp";
 const URL_COMMAND: &'static str = "url";
 const BOOKMARK_COMMAND: &'static str = "bookmark";
-// const BITCOIN_COMMAND: &'static str = "bitcoin";
+const BITCOIN_COMMAND: &'static str = "bitcoin";
 // const GIRO_COMMAND: &'static str = "giro";
 // const CALENDAR_COMMAND: &'static str = "calendar";
 
@@ -167,6 +167,13 @@ fn get_payload(matches: &clap::ArgMatches) -> String {
         return payloads::bookmark_string(
             sub.value_of("title").unwrap(),
             sub.value_of("url").unwrap(),
+        );
+    } else if let Some(sub) = matches.subcommand_matches(BITCOIN_COMMAND) {
+        return payloads::bitcoin_string(
+            sub.value_of("address").unwrap(),
+            sub.value_of("amount").map(|a| a.parse::<f64>().unwrap_or_default()),
+            sub.value_of("label"),
+            sub.value_of("message"),
         );
     } else {
         return String::from(matches.value_of("INPUT").unwrap());
@@ -416,5 +423,13 @@ fn build_cli() -> App<'static, 'static> {
                 .about("formats to a bookmark QR-Code")
                 .arg(Arg::with_name("title").required(true))
                 .arg(Arg::with_name("url").required(true)),
+        )
+        .subcommand(
+            SubCommand::with_name(BITCOIN_COMMAND)
+                .about("outputs a bitcoin adress/transaction")
+                .arg(Arg::with_name("address").required(true))
+                .arg(Arg::with_name("amount"))
+                .arg(Arg::with_name("label"))
+                .arg(Arg::with_name("message")),
         )
 }
