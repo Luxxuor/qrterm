@@ -32,6 +32,7 @@ const BOOKMARK_COMMAND: &'static str = "bookmark";
 const BITCOIN_COMMAND: &'static str = "bitcoin";
 // const GIRO_COMMAND: &'static str = "giro";
 // const CALENDAR_COMMAND: &'static str = "calendar";
+// const CONTACT_COMMAND: &'static str = "contact";
 
 /*TODO: add arguments for:
 - Add help texts for the subcommands
@@ -79,7 +80,7 @@ fn main() {
         _ => false,
     };
 
-    // what error level can we expect? always defaults to "H"
+    // what error level can we expect? defaults to "H"
     let error: EcLevel = match matches.value_of("error").unwrap() {
         "L" => EcLevel::L,
         "M" => EcLevel::M,
