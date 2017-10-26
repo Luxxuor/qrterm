@@ -88,12 +88,17 @@ fn main() {
     };
 
     //TODO: catch the possible errors
-    let code = QrCode::with_error_correction_level(payload, error).unwrap();
+    let code = QrCode::with_error_correction_level(&payload, error).unwrap();
 
     // are we drawing to the terminal or to a file?
     match matches.occurrences_of("output") {
         1 => save(&code, safe, matches.value_of("output").unwrap()),
         _ => draw(&code, safe),
+    }
+
+    // shall we also print the payload to the screen?
+    if matches.occurrences_of("payload") > 0 {
+        println!("{:?}", payload);
     }
 }
 
@@ -297,6 +302,16 @@ fn build_cli() -> App<'static, 'static> {
             Currently only jpeg and png files are supported.",
                 )
                 .value_name("FILE"),
+        )
+        .arg(
+            Arg::with_name("payload")
+                .global(true)
+                .short("p")
+                .long("payload")
+                .help(
+                    "If this flag is set, the generated payload will also be printed to the terminal."
+                )
+                .takes_value(false)
         )
         .arg(
             Arg::with_name("error")
