@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/lukasreuter/qrterm.svg?branch=master)](https://travis-ci.org/lukasreuter/qrterm)
+
 # qrterm
 
 `qrterm` is a simple but powerful tool to generate and simultaneously display QR-Codes inside your favorite ANSI-compatible Terminal. I came up with the idea during a project which required generation of simple QR-Codes and was wondering why the only other alternative was written in nodejs.
