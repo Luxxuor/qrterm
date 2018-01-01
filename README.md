@@ -28,7 +28,7 @@ Currently there are two ways to get `qrterm`:
 You must have the Rust toolchain installed. For installation instructions please visit [rustup.rs](rustup.rs).
 
 ```bash
-cargo install https://github.com/lukasreuter/qrterm
+cargo install --git https://github.com/lukasreuter/qrterm
 ```
 
 #### As binary release
