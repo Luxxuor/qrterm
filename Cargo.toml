@@ -9,10 +9,10 @@ keywords = ["qr", "terminal", "tool", "cli"]
 license = "mit"
 
 [dependencies]
-qrcode = "0.4.*"
+qrcode = "0.5.*"
 term = "*"
 clap = "*"
-image = "0.13.*"
+image = "0.17.*"
 regex = "*"
 lazy_static = "*"
 urlparse = "*"
