@@ -3,11 +3,8 @@ extern crate lazy_static;
 #[macro_use]
 extern crate clap;
 
-extern crate qrcode;
-extern crate image;
-extern crate regex;
-extern crate urlparse;
-extern crate term;
+use qrcode;
+use term;
 
 use clap::{App, AppSettings, Arg, Shell, SubCommand};
 use qrcode::{QrCode, EcLevel};
@@ -104,7 +101,7 @@ fn main() {
 }
 
 // deduces wich kind of string we are going to encode
-fn get_payload(matches: &clap::ArgMatches) -> String {
+fn get_payload(matches: &clap::ArgMatches<'_>) -> String {
     if let Some(sub) = matches.subcommand_matches(WIFI_COMMAND) {
         let auth = match sub.value_of("mode") {
             Some("WEP") => payloads::Authentication::WEP,
