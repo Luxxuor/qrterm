@@ -24,10 +24,7 @@ pub fn wifi_string(ssid: &str, password: &str, mode: &Authentication, is_hidden:
 
     return format!(
         "WIFI:T:{:?};S:{};P:{};{};",
-        mode,
-        ssid_n,
-        password_n,
-        hidden
+        mode, ssid_n, password_n, hidden
     );
 }
 
@@ -46,30 +43,24 @@ pub fn mail_string(
     encoding: &MailEncoding,
 ) -> String {
     match *encoding {
-        MailEncoding::MAILTO => {
-            format!(
-                "mailto:{}?subject={}&body={}",
-                receiver,
-                uri_escape(subject),
-                uri_escape(message)
-            )
-        }
-        MailEncoding::MATMSG => {
-            format!(
-                "MATMSG:TO:{};SUB:{};BODY:{};;",
-                receiver,
-                escape_input(subject, false),
-                escape_input(message, false)
-            )
-        }
-        MailEncoding::SMTP => {
-            format!(
-                "SMTP:{}:{}:{}",
-                receiver,
-                escape_input(subject, true),
-                escape_input(message, true)
-            )
-        }
+        MailEncoding::MAILTO => format!(
+            "mailto:{}?subject={}&body={}",
+            receiver,
+            uri_escape(subject),
+            uri_escape(message)
+        ),
+        MailEncoding::MATMSG => format!(
+            "MATMSG:TO:{};SUB:{};BODY:{};;",
+            receiver,
+            escape_input(subject, false),
+            escape_input(message, false)
+        ),
+        MailEncoding::SMTP => format!(
+            "SMTP:{}:{}:{}",
+            receiver,
+            escape_input(subject, true),
+            escape_input(message, true)
+        ),
     }
 }
 

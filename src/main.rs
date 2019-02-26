@@ -3,41 +3,15 @@ extern crate lazy_static;
 #[macro_use]
 extern crate clap;
 
-use qrcode;
-use term;
+extern crate qrterm;
 
 use clap::{App, AppSettings, Arg, Shell, SubCommand};
-use qrcode::{QrCode, EcLevel};
-use term::color;
-use image::Luma;
-use std::io::prelude::*;
-use std::process::exit;
+use qrcode::EcLevel;
 use std::fs;
+use std::process::exit;
 
 mod payloads;
 
-const WIFI_COMMAND: &str = "wifi";
-const MAIL_COMMAND: &str = "mail";
-const SMS_COMMAND: &str = "sms";
-const MMS_COMMAND: &str = "mms";
-const GEO_COMMAND: &str = "geo";
-const PHONE_COMMAND: &str = "phone";
-const SKYPE_COMMAND: &str = "skype";
-const WHATSAPP_COMMAND: &str = "whatsapp";
-const URL_COMMAND: &str = "url";
-const BOOKMARK_COMMAND: &str = "bookmark";
-const BITCOIN_COMMAND: &str = "bitcoin";
-// const GIRO_COMMAND: &'static str = "giro";
-// const CALENDAR_COMMAND: &'static str = "calendar";
-// const CONTACT_COMMAND: &'static str = "contact";
-
-/*TODO: add arguments for:
-- Add help texts for the subcommands
-- Add error texts for some exit branches (mostly file output and qrcode gen)
-- implement different types of qr payloads
-- write unit tests for the payloads
-- write integration tests for edge case inputs
-*/
 fn main() {
     // match all input args
     let matches = build_cli().get_matches();
@@ -60,49 +34,57 @@ fn main() {
 
         println!(
             "Completion file for the {:?} shell was writen to: {:?}",
-            shell,
-            dir
+            shell, dir
         );
 
         // exit and dont generate a qr-code
         exit(0);
     }
 
+    let mut params = qrterm::Parameters::new();
+
+    // write the completions if they were requested, then exit and dont print any qr-code
+    if let Some(comp) = matches.subcommand_matches("completions") {
+        params.completions.comp_dir = match comp.value_of("comp_dir") {
+            Some(e) => e.to_string(),
+            None => "".to_string(),
+        };
+        params.completions.shell = match comp.value_of("shell") {
+            Some(e) => e.to_string(),
+            None => "".to_string(),
+        };
+    }
+
     // deduce the string payload
-    let payload = get_payload(&matches);
+    params.payload = get_payload(&matches);
 
     // should we draw a white border (safe zone) around the code?
-    let safe = match matches.occurrences_of("safe_zone") {
+    params.safe_zone = match matches.occurrences_of("safe_zone") {
         0 => true,
         _ => false,
     };
 
     // what error level can we expect? defaults to "H"
-    let error: EcLevel = match matches.value_of("error").unwrap() {
+    params.error = match matches.value_of("error").unwrap() {
         "L" => EcLevel::L,
         "M" => EcLevel::M,
         "Q" => EcLevel::Q,
         &_ => EcLevel::H,
     };
 
-    //TODO: catch the possible errors
-    let code = QrCode::with_error_correction_level(&payload, error).unwrap();
+    // What outputs are there
 
-    // are we drawing to the terminal or to a file?
-    match matches.occurrences_of("output") {
-        1 => save(&code, safe, matches.value_of("output").unwrap()),
-        _ => draw(&code, safe),
-    }
+    params.output = match matches.value_of("output") {
+        Some(e) => e.to_string(),
+        None => "".to_string(),
+    };
 
-    // shall we also print the payload to the screen?
-    if matches.occurrences_of("payload") > 0 {
-        println!("{:?}", payload);
-    }
+    qrterm::generate(&params);
 }
 
 // deduces wich kind of string we are going to encode
 fn get_payload(matches: &clap::ArgMatches<'_>) -> String {
-    if let Some(sub) = matches.subcommand_matches(WIFI_COMMAND) {
+    if let Some(sub) = matches.subcommand_matches(qrterm::WIFI_COMMAND) {
         let auth = match sub.value_of("mode") {
             Some("WEP") => payloads::Authentication::WEP,
             Some("WPA") => payloads::Authentication::WPA,
@@ -114,7 +96,7 @@ fn get_payload(matches: &clap::ArgMatches<'_>) -> String {
             &auth,
             sub.value_of("hidden").unwrap() == "true",
         );
-    } else if let Some(sub) = matches.subcommand_matches(MAIL_COMMAND) {
+    } else if let Some(sub) = matches.subcommand_matches(qrterm::MAIL_COMMAND) {
         let encoding = match sub.value_of("encoding") {
             Some("MATMSG") => payloads::MailEncoding::MATMSG,
             Some("SMTP") => payloads::MailEncoding::SMTP,
@@ -126,15 +108,15 @@ fn get_payload(matches: &clap::ArgMatches<'_>) -> String {
             sub.value_of("message").unwrap(),
             &encoding,
         );
-    } else if let Some(sub) = matches.subcommand_matches(URL_COMMAND) {
+    } else if let Some(sub) = matches.subcommand_matches(qrterm::URL_COMMAND) {
         return payloads::url_string(sub.value_of("url").unwrap());
-    } else if let Some(sub) = matches.subcommand_matches(PHONE_COMMAND) {
+    } else if let Some(sub) = matches.subcommand_matches(qrterm::PHONE_COMMAND) {
         return payloads::phone_string(sub.value_of("phone").unwrap());
-    } else if let Some(sub) = matches.subcommand_matches(SKYPE_COMMAND) {
+    } else if let Some(sub) = matches.subcommand_matches(qrterm::SKYPE_COMMAND) {
         return payloads::skype_string(sub.value_of("name").unwrap());
-    } else if let Some(sub) = matches.subcommand_matches(WHATSAPP_COMMAND) {
+    } else if let Some(sub) = matches.subcommand_matches(qrterm::WHATSAPP_COMMAND) {
         return payloads::whatsapp_string(sub.value_of("message").unwrap());
-    } else if let Some(sub) = matches.subcommand_matches(SMS_COMMAND) {
+    } else if let Some(sub) = matches.subcommand_matches(qrterm::SMS_COMMAND) {
         let encoding = match sub.value_of("encoding") {
             Some("SMSTO") => payloads::SMSEncoding::SMSTO,
             Some("SMS_iOS") => payloads::SMSEncoding::SMS_iOS,
@@ -145,7 +127,7 @@ fn get_payload(matches: &clap::ArgMatches<'_>) -> String {
             sub.value_of("subject").unwrap(),
             &encoding,
         );
-    } else if let Some(sub) = matches.subcommand_matches(MMS_COMMAND) {
+    } else if let Some(sub) = matches.subcommand_matches(qrterm::MMS_COMMAND) {
         let encoding = match sub.value_of("encoding") {
             Some("MMSTO") => payloads::MMSEncoding::MMSTO,
             _ => payloads::MMSEncoding::MMS,
@@ -155,7 +137,7 @@ fn get_payload(matches: &clap::ArgMatches<'_>) -> String {
             sub.value_of("subject").unwrap(),
             &encoding,
         );
-    } else if let Some(sub) = matches.subcommand_matches(GEO_COMMAND) {
+    } else if let Some(sub) = matches.subcommand_matches(qrterm::GEO_COMMAND) {
         let encoding = match sub.value_of("encoding") {
             Some("GoogleMaps") => payloads::GeolocationEncoding::GoogleMaps,
             _ => payloads::GeolocationEncoding::GEO,
@@ -165,111 +147,22 @@ fn get_payload(matches: &clap::ArgMatches<'_>) -> String {
             sub.value_of("longitude").unwrap(),
             &encoding,
         );
-    } else if let Some(sub) = matches.subcommand_matches(BOOKMARK_COMMAND) {
+    } else if let Some(sub) = matches.subcommand_matches(qrterm::BOOKMARK_COMMAND) {
         return payloads::bookmark_string(
             sub.value_of("title").unwrap(),
             sub.value_of("url").unwrap(),
         );
-    } else if let Some(sub) = matches.subcommand_matches(BITCOIN_COMMAND) {
+    } else if let Some(sub) = matches.subcommand_matches(qrterm::BITCOIN_COMMAND) {
         return payloads::bitcoin_string(
             sub.value_of("address").unwrap(),
-            sub.value_of("amount").map(|a| a.parse::<f64>().unwrap_or_default()),
+            sub.value_of("amount")
+                .map(|a| a.parse::<f64>().unwrap_or_default()),
             sub.value_of("label"),
             sub.value_of("message"),
         );
     } else {
         return String::from(matches.value_of("INPUT").unwrap());
     }
-}
-
-// save to a file at the path
-fn save(code: &QrCode, safe: bool, path: &str) {
-    // render to a image struct
-    let image = code.render::<Luma<u8>>().quiet_zone(safe).build();
-
-    // save the image
-    match image.save(path) {
-        Ok(..) => println!("Image successfully saved to: {:?}", path),
-        Err(e) => {
-            println!(
-                "Tried to create file but there was a problem: {:?}",
-                if let Some(inner_err) = e.get_ref() {
-                    inner_err.to_string()
-                } else {
-                    e.to_string()
-                }
-            )
-        }
-    };
-}
-
-// draw to the terminal
-fn draw(code: &QrCode, safe: bool) {
-    // get "bit" array
-    let bit_array = code.to_colors();
-
-    // get the terminal output pipe
-    let mut t = term::stdout().unwrap();
-
-    // get the code width and add extra space for the safe zone
-    let w = code.width();
-    let wide = w + 6;
-
-    // draw the first white safe zone
-    if safe {
-        for a in 1..(wide * 3) + 1 {
-            t.bg(color::BRIGHT_WHITE).unwrap();
-            write!(t, "  ").unwrap();
-            if a % wide == 0 {
-                t.reset().unwrap();
-                writeln!(t, "").unwrap();
-            }
-        }
-    }
-
-    // main drawing loop
-    for (i, item) in bit_array.iter().enumerate() {
-        // left safe zone
-        if safe && i % w == 0 {
-            t.bg(color::BRIGHT_WHITE).unwrap();
-            write!(t, "      ").unwrap();
-        }
-
-        // draw black or white blocks
-        if *item == qrcode::Color::Dark {
-            t.bg(color::BLACK).unwrap();
-            write!(t, "  ").unwrap();
-        } else {
-            t.bg(color::BRIGHT_WHITE).unwrap();
-            write!(t, "  ").unwrap();
-        }
-
-        if (i + 1) % w == 0 {
-            if safe {
-                // draw right safe zone
-                t.bg(color::BRIGHT_WHITE).unwrap();
-                write!(t, "      ").unwrap();
-            }
-            t.reset().unwrap();
-            writeln!(t, "").unwrap();
-        }
-    }
-
-    // draw the last white safe zone
-    if safe {
-        for a in 1..(wide * 3) + 1 {
-            t.bg(color::BRIGHT_WHITE).unwrap();
-            write!(t, "  ").unwrap();
-            if a % wide == 0 {
-                t.reset().unwrap();
-                writeln!(t, "").unwrap();
-            }
-        }
-    }
-
-    // reset to normal color and flush write buffer
-    t.reset().unwrap();
-    t.flush().unwrap();
 }
 
 // create the interface for the app with all subcommands, flags and args
@@ -345,7 +238,7 @@ fn build_cli() -> App<'static, 'static> {
                 ),
         )
         .subcommand(
-            SubCommand::with_name(WIFI_COMMAND)
+            SubCommand::with_name(qrterm::WIFI_COMMAND)
                 .about("formats to a wifi access string QR-Code")
                 .arg(Arg::with_name("ssid").required(true))
                 .arg(Arg::with_name("pwd").required(true))
@@ -363,7 +256,7 @@ fn build_cli() -> App<'static, 'static> {
                 ),
         )
         .subcommand(
-            SubCommand::with_name(MAIL_COMMAND)
+            SubCommand::with_name(qrterm::MAIL_COMMAND)
                 .about("formats to a mail adress string QR-Code")
                 .arg(Arg::with_name("receiver").required(true))
                 .arg(Arg::with_name("subject"))
@@ -376,29 +269,29 @@ fn build_cli() -> App<'static, 'static> {
                 ),
         )
         .subcommand(
-            SubCommand::with_name(URL_COMMAND)
+            SubCommand::with_name(qrterm::URL_COMMAND)
                 .about("formats to an URL QR-Code")
                 .arg(Arg::with_name("url").required(true).value_name("URL")),
         )
         .subcommand(
-            SubCommand::with_name(PHONE_COMMAND)
+            SubCommand::with_name(qrterm::PHONE_COMMAND)
                 .about("formats to a phone number QR-Code")
                 .arg(Arg::with_name("number").required(true).value_name("NUMBER")),
         )
         .subcommand(
-            SubCommand::with_name(SKYPE_COMMAND)
+            SubCommand::with_name(qrterm::SKYPE_COMMAND)
                 .about("formats to a skype call QR-Code")
                 .arg(Arg::with_name("name").required(true).value_name("HANDLE")),
         )
         .subcommand(
-            SubCommand::with_name(WHATSAPP_COMMAND)
+            SubCommand::with_name(qrterm::WHATSAPP_COMMAND)
                 .about("formats to a whatsapp message QR-Code")
                 .arg(Arg::with_name("message").required(true).value_name(
                     "MESSAGE",
                 )),
         )
         .subcommand(
-            SubCommand::with_name(SMS_COMMAND)
+            SubCommand::with_name(qrterm::SMS_COMMAND)
                 .about("formats to a sms message QR-Code")
                 .arg(Arg::with_name("number").required(true))
                 .arg(Arg::with_name("subject").default_value(""))
@@ -409,7 +302,7 @@ fn build_cli() -> App<'static, 'static> {
                 ),
         )
         .subcommand(
-            SubCommand::with_name(MMS_COMMAND)
+            SubCommand::with_name(qrterm::MMS_COMMAND)
                 .about("formats to a mms message QR-Code")
                 .arg(Arg::with_name("number").required(true))
                 .arg(Arg::with_name("subject").default_value(""))
@@ -420,7 +313,7 @@ fn build_cli() -> App<'static, 'static> {
                 ),
         )
         .subcommand(
-            SubCommand::with_name(GEO_COMMAND)
+            SubCommand::with_name(qrterm::GEO_COMMAND)
                 .about("formats to a geospacial location QR-Code")
                 .arg(Arg::with_name("latitude").required(true))
                 .arg(Arg::with_name("longitude").required(true))
@@ -431,13 +324,13 @@ fn build_cli() -> App<'static, 'static> {
                 ),
         )
         .subcommand(
-            SubCommand::with_name(BOOKMARK_COMMAND)
+            SubCommand::with_name(qrterm::BOOKMARK_COMMAND)
                 .about("formats to a bookmark QR-Code")
                 .arg(Arg::with_name("title").required(true))
                 .arg(Arg::with_name("url").required(true)),
         )
         .subcommand(
-            SubCommand::with_name(BITCOIN_COMMAND)
+            SubCommand::with_name(qrterm::BITCOIN_COMMAND)
                 .about("outputs a bitcoin adress/transaction")
                 .arg(Arg::with_name("address").required(true))
                 .arg(Arg::with_name("amount"))
