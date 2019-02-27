@@ -79,7 +79,7 @@ fn main() {
         None => "".to_string(),
     };
 
-    qrterm::generate(&params);
+    params.generate();
 }
 
 // deduces wich kind of string we are going to encode

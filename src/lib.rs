@@ -1,15 +1,13 @@
 #[macro_use]
 extern crate lazy_static;
-#[macro_use]
 extern crate clap;
 
-use clap::{App, AppSettings, Arg, Shell, SubCommand};
 use image::Luma;
 use qrcode;
 use qrcode::{EcLevel, QrCode};
-use std::fs;
+
 use std::io::prelude::*;
-use std::process::exit;
+
 use term;
 use term::color;
 
@@ -42,15 +40,53 @@ pub struct Parameters {
 }
 
 impl Parameters {
+    // Return empty, default struct
     pub fn new() -> Parameters {
         Parameters {
-            safe_zone: false,
+            safe_zone: true,
             output: "".to_string(),
             payload: "".to_string(),
             error: EcLevel::H,
             input: "".to_string(),
             completions: Completions::new(),
             command: "".to_string(),
+        }
+    }
+
+    // Return a struct with some data already defined
+    pub fn new_with_data(data: &String) -> Parameters {
+        Parameters {
+            safe_zone: true,
+            output: "".to_string(),
+            payload: data.to_string(),
+            error: EcLevel::H,
+            input: "".to_string(),
+            completions: Completions::new(),
+            command: "".to_string(),
+        }
+    }
+
+    /*TODO: add arguments for:
+    - Add help texts for the subcommands
+    - Add error texts for some exit branches (mostly file output and qrcode gen)
+    - implement different types of qr payloads
+    - write unit tests for the payloads
+    - write integration tests for edge case inputs
+    */
+    pub fn generate(&self) {
+        //TODO: catch the possible errors
+        let code = QrCode::with_error_correction_level(&self.payload, self.error).unwrap();
+
+        // are we drawing to the terminal or to a file?
+        if self.output.len() == 1 {
+            save(&code, self.safe_zone, &self.output);
+        } else {
+            draw(&code, self.safe_zone)
+        }
+
+        // shall we also print the payload to the screen?
+        if self.payload.len() > 0 {
+            println!("{:?}", self.payload);
         }
     }
 }
@@ -66,30 +102,6 @@ impl Completions {
             comp_dir: "".to_string(),
             shell: "".to_string(),
         }
-    }
-}
-
-/*TODO: add arguments for:
-- Add help texts for the subcommands
-- Add error texts for some exit branches (mostly file output and qrcode gen)
-- implement different types of qr payloads
-- write unit tests for the payloads
-- write integration tests for edge case inputs
-*/
-pub fn generate(data: &Parameters) {
-    //TODO: catch the possible errors
-    let code = QrCode::with_error_correction_level(&data.payload, data.error).unwrap();
-
-    // are we drawing to the terminal or to a file?
-    if data.output.len() == 1 {
-        save(&code, data.safe_zone, &data.output);
-    } else {
-        draw(&code, data.safe_zone)
-    }
-
-    // shall we also print the payload to the screen?
-    if data.payload.len() > 0 {
-        println!("{:?}", data.payload);
     }
 }
 
