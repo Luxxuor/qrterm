@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/lukasreuter/qrterm.svg?branch=master)](https://travis-ci.org/lukasreuter/qrterm)
+![Rust](https://github.com/lukasreuter/qrterm/workflows/Rust/badge.svg)
 
 # qrterm
 
