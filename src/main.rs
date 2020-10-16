@@ -90,78 +90,78 @@ fn get_payload(matches: &clap::ArgMatches<'_>) -> String {
             Some("WPA") => payloads::Authentication::WPA,
             _ => payloads::Authentication::nopass,
         };
-        return payloads::wifi_string(
+        payloads::wifi_string(
             sub.value_of("ssid").unwrap(),
             sub.value_of("pwd").unwrap(),
             &auth,
             sub.value_of("hidden").unwrap() == "true",
-        );
+        )
     } else if let Some(sub) = matches.subcommand_matches(qrterm::MAIL_COMMAND) {
         let encoding = match sub.value_of("encoding") {
             Some("MATMSG") => payloads::MailEncoding::MATMSG,
             Some("SMTP") => payloads::MailEncoding::SMTP,
             _ => payloads::MailEncoding::MAILTO,
         };
-        return payloads::mail_string(
+        payloads::mail_string(
             sub.value_of("receiver").unwrap(),
             sub.value_of("subject").unwrap(),
             sub.value_of("message").unwrap(),
             &encoding,
-        );
+        )
     } else if let Some(sub) = matches.subcommand_matches(qrterm::URL_COMMAND) {
-        return payloads::url_string(sub.value_of("url").unwrap());
+        payloads::url_string(sub.value_of("url").unwrap())
     } else if let Some(sub) = matches.subcommand_matches(qrterm::PHONE_COMMAND) {
-        return payloads::phone_string(sub.value_of("phone").unwrap());
+        payloads::phone_string(sub.value_of("phone").unwrap())
     } else if let Some(sub) = matches.subcommand_matches(qrterm::SKYPE_COMMAND) {
-        return payloads::skype_string(sub.value_of("name").unwrap());
+        payloads::skype_string(sub.value_of("name").unwrap())
     } else if let Some(sub) = matches.subcommand_matches(qrterm::WHATSAPP_COMMAND) {
-        return payloads::whatsapp_string(sub.value_of("message").unwrap());
+        payloads::whatsapp_string(sub.value_of("message").unwrap())
     } else if let Some(sub) = matches.subcommand_matches(qrterm::SMS_COMMAND) {
         let encoding = match sub.value_of("encoding") {
             Some("SMSTO") => payloads::SMSEncoding::SMSTO,
             Some("SMS_iOS") => payloads::SMSEncoding::SMS_iOS,
             _ => payloads::SMSEncoding::SMS,
         };
-        return payloads::sms_string(
+        payloads::sms_string(
             sub.value_of("number").unwrap(),
             sub.value_of("subject").unwrap(),
             &encoding,
-        );
+        )
     } else if let Some(sub) = matches.subcommand_matches(qrterm::MMS_COMMAND) {
         let encoding = match sub.value_of("encoding") {
             Some("MMSTO") => payloads::MMSEncoding::MMSTO,
             _ => payloads::MMSEncoding::MMS,
         };
-        return payloads::mms_string(
+        payloads::mms_string(
             sub.value_of("number").unwrap(),
             sub.value_of("subject").unwrap(),
             &encoding,
-        );
+        )
     } else if let Some(sub) = matches.subcommand_matches(qrterm::GEO_COMMAND) {
         let encoding = match sub.value_of("encoding") {
             Some("GoogleMaps") => payloads::GeolocationEncoding::GoogleMaps,
             _ => payloads::GeolocationEncoding::GEO,
         };
-        return payloads::geo_string(
+        payloads::geo_string(
             sub.value_of("latitude").unwrap(),
             sub.value_of("longitude").unwrap(),
             &encoding,
-        );
+        )
     } else if let Some(sub) = matches.subcommand_matches(qrterm::BOOKMARK_COMMAND) {
-        return payloads::bookmark_string(
+        payloads::bookmark_string(
             sub.value_of("title").unwrap(),
             sub.value_of("url").unwrap(),
-        );
+        )
     } else if let Some(sub) = matches.subcommand_matches(qrterm::BITCOIN_COMMAND) {
-        return payloads::bitcoin_string(
+        payloads::bitcoin_string(
             sub.value_of("address").unwrap(),
             sub.value_of("amount")
                 .map(|a| a.parse::<f64>().unwrap_or_default()),
             sub.value_of("label"),
             sub.value_of("message"),
-        );
+        )
     } else {
-        return String::from(matches.value_of("INPUT").unwrap());
+        String::from(matches.value_of("INPUT").unwrap())
     }
 }
 

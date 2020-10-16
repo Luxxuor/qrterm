@@ -2,6 +2,7 @@ use regex::Regex;
 use urlparse::quote;
 
 #[derive(Debug)]
+#[allow(dead_code)]
 #[allow(non_camel_case_types)]
 pub enum Authentication {
     WEP,
@@ -9,6 +10,7 @@ pub enum Authentication {
     nopass,
 }
 
+#[allow(dead_code)]
 pub fn wifi_string(ssid: &str, password: &str, mode: &Authentication, is_hidden: bool) -> String {
     let ssid_n = escape_input(ssid, false);
     let sn = "\"".to_string() + &ssid_n + "\"";
@@ -29,6 +31,7 @@ pub fn wifi_string(ssid: &str, password: &str, mode: &Authentication, is_hidden:
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 #[allow(non_camel_case_types)]
 pub enum MailEncoding {
     MAILTO,
@@ -36,6 +39,7 @@ pub enum MailEncoding {
     SMTP,
 }
 
+#[allow(dead_code)]
 pub fn mail_string(
     receiver: &str,
     subject: &str,
@@ -65,6 +69,7 @@ pub fn mail_string(
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 #[allow(non_camel_case_types)]
 pub enum SMSEncoding {
     SMS,
@@ -72,6 +77,7 @@ pub enum SMSEncoding {
     SMS_iOS,
 }
 
+#[allow(dead_code)]
 pub fn sms_string(number: &str, subject: &str, encoding: &SMSEncoding) -> String {
     match *encoding {
         SMSEncoding::SMS => format!("sms:{}?body={}", number, uri_escape(subject)),
@@ -81,12 +87,14 @@ pub fn sms_string(number: &str, subject: &str, encoding: &SMSEncoding) -> String
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 #[allow(non_camel_case_types)]
 pub enum MMSEncoding {
     MMS,
     MMSTO,
 }
 
+#[allow(dead_code)]
 pub fn mms_string(number: &str, subject: &str, encoding: &MMSEncoding) -> String {
     match *encoding {
         MMSEncoding::MMSTO => format!("mmsto:{}?subject={}", number, uri_escape(subject)),
@@ -95,12 +103,14 @@ pub fn mms_string(number: &str, subject: &str, encoding: &MMSEncoding) -> String
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 #[allow(non_camel_case_types)]
 pub enum GeolocationEncoding {
     GEO,
     GoogleMaps,
 }
 
+#[allow(dead_code)]
 pub fn geo_string(latitude: &str, longitude: &str, encoding: &GeolocationEncoding) -> String {
     let lat = latitude.replace(",", ".");
     let long = longitude.replace(",", ".");
@@ -113,14 +123,17 @@ pub fn geo_string(latitude: &str, longitude: &str, encoding: &GeolocationEncodin
     }
 }
 
+#[allow(dead_code)]
 pub fn skype_string(inp: &str) -> String {
     format!("skype:{}?call", inp)
 }
 
+#[allow(dead_code)]
 pub fn whatsapp_string(message: &str) -> String {
     format!("whatsapp://send?text={}", uri_escape(message))
 }
 
+#[allow(dead_code)]
 pub fn bookmark_string(title: &str, url: &str) -> String {
     format!(
         "MEBKM:TITLE:{};URL:{};;",
@@ -129,10 +142,12 @@ pub fn bookmark_string(title: &str, url: &str) -> String {
     )
 }
 
+#[allow(dead_code)]
 pub fn phone_string(number: &str) -> String {
     format!("tel:{}", number)
 }
 
+#[allow(dead_code)]
 pub fn bitcoin_string(
     address: &str,
     amount: Option<f64>,
@@ -188,6 +203,7 @@ pub fn bitcoin_string(
     return format!("bitcoin:{}{}", address, query);
 }
 
+#[allow(dead_code)]
 pub fn url_string(url: &str) -> String {
     if !url.starts_with("http") {
         "http://".to_string() + url
@@ -196,6 +212,7 @@ pub fn url_string(url: &str) -> String {
     }
 }
 
+#[allow(dead_code)]
 fn escape_input(inp: &str, simple: bool) -> String {
     let mut forbidden = Vec::new();
     if simple {
@@ -214,12 +231,13 @@ fn escape_input(inp: &str, simple: bool) -> String {
     n
 }
 
+#[allow(dead_code)]
 fn uri_escape(inp: &str) -> String {
     quote(inp, b"").ok().unwrap()
 }
 
-#[allow(unknown_lints)]
-#[allow(zero_ptr)]
+#[allow(dead_code)]
+#[allow(clippy::zero_ptr)]
 fn is_hexstyle(arg: &str) -> bool {
     lazy_static! {
         static ref LE: Regex = Regex::new(r"\A\b[0-9a-fA-F]+\b\z").unwrap();

@@ -3,12 +3,10 @@ extern crate lazy_static;
 extern crate clap;
 
 use image::Luma;
-use qrcode;
 use qrcode::{EcLevel, QrCode};
 
 use std::io::prelude::*;
 
-use term;
 use term::color;
 
 mod payloads;
@@ -39,6 +37,12 @@ pub struct Parameters {
     pub command: String,
 }
 
+impl Default for Parameters {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Parameters {
     // Return empty, default struct
     pub fn new() -> Parameters {
@@ -54,7 +58,7 @@ impl Parameters {
     }
 
     // Return a struct with some data already defined
-    pub fn new_with_data(data: &String) -> Parameters {
+    pub fn new_with_data(data: &str) -> Parameters {
         Parameters {
             safe_zone: true,
             output: "".to_string(),
@@ -85,7 +89,7 @@ impl Parameters {
         }
 
         // shall we also print the payload to the screen?
-        if self.payload.len() > 0 {
+        if !self.payload.is_empty() {
             println!("{:?}", self.payload);
         }
     }
@@ -102,6 +106,11 @@ impl Completions {
             comp_dir: "".to_string(),
             shell: "".to_string(),
         }
+    }
+}
+impl Default for Completions {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -143,7 +152,7 @@ fn draw(code: &QrCode, safe: bool) {
             write!(t, "  ").unwrap();
             if a % wide == 0 {
                 t.reset().unwrap();
-                writeln!(t, "").unwrap();
+                writeln!(t).unwrap();
             }
         }
     }
@@ -172,7 +181,7 @@ fn draw(code: &QrCode, safe: bool) {
                 write!(t, "      ").unwrap();
             }
             t.reset().unwrap();
-            writeln!(t, "").unwrap();
+            writeln!(t).unwrap();
         }
     }
 
@@ -183,7 +192,7 @@ fn draw(code: &QrCode, safe: bool) {
             write!(t, "  ").unwrap();
             if a % wide == 0 {
                 t.reset().unwrap();
-                writeln!(t, "").unwrap();
+                writeln!(t).unwrap();
             }
         }
     }
