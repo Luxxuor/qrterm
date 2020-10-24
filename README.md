@@ -1,4 +1,4 @@
-![Rust](https://github.com/lukasreuter/qrterm/workflows/Rust/badge.svg)
+![CI](https://github.com/lukasreuter/qrterm/workflows/CI/badge.svg)
 
 # qrterm
 
